@@ -114,13 +114,17 @@ export default function Home() {
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [handleKeyDown]);
 
-	const handleLetterClick = (letter: string) => {
+	const appendLetter = (letter: string) => {
 		if (gameState !== 'playing' || currentGuess.length >= WORD_LENGTH) {
 			return;
 		}
 
 		inputRef.current?.focus();
 		setCurrentGuess((prev) => prev + letter);
+	};
+
+	const handleLetterClick = (letter: string) => {
+		appendLetter(letter);
 	};
 
 	const handleBackspace = () => {
@@ -197,6 +201,7 @@ export default function Home() {
 					type='text'
 					value={currentGuess}
 					onChange={(event) => handleInputChange(event.target.value)}
+					onInput={(event) => handleInputChange(event.currentTarget.value)}
 					onKeyDown={handleInputKeyDown}
 					inputMode='text'
 					autoCapitalize='characters'
@@ -237,7 +242,15 @@ export default function Home() {
 							{row.split('').map((letter) => (
 								<button
 									key={letter}
-									onClick={() => handleLetterClick(letter)}
+									type='button'
+									onPointerDown={(event) => {
+										event.preventDefault();
+										handleLetterClick(letter);
+									}}
+									onClick={(event) => {
+										event.preventDefault();
+										handleLetterClick(letter);
+									}}
 									className='touch-manipulation min-h-[44px] rounded-lg bg-zinc-800 px-2 py-2 text-sm font-semibold uppercase text-zinc-100 transition hover:bg-zinc-700 sm:px-3 sm:py-3'
 								>
 									{letter}
@@ -248,13 +261,29 @@ export default function Home() {
 
 					<div className='flex justify-center gap-2'>
 						<button
-							onClick={handleBackspace}
+							type='button'
+							onPointerDown={(event) => {
+								event.preventDefault();
+								handleBackspace();
+							}}
+							onClick={(event) => {
+								event.preventDefault();
+								handleBackspace();
+							}}
 							className='touch-manipulation min-h-[44px] rounded-lg bg-zinc-800 px-3 py-3 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700 sm:px-4'
 						>
 							Delete
 						</button>
 						<button
-							onClick={handleEnter}
+							type='button'
+							onPointerDown={(event) => {
+								event.preventDefault();
+								handleEnter();
+							}}
+							onClick={(event) => {
+								event.preventDefault();
+								handleEnter();
+							}}
 							className='touch-manipulation min-h-[44px] rounded-lg bg-emerald-600 px-3 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 sm:px-4'
 						>
 							Enter

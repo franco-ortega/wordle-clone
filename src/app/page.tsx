@@ -145,28 +145,30 @@ export default function Home() {
 	};
 
 	return (
-		<main className='flex min-h-screen flex-col items-center justify-center bg-zinc-950 px-4 py-8 text-zinc-100'>
-			<div className='w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-900/80 p-6 shadow-2xl shadow-black/30'>
-				<div className='mb-6 flex items-center justify-between'>
+		<main className='flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden bg-zinc-950 px-2 py-4 text-zinc-100 sm:px-4 sm:py-8'>
+			<div className='w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-900/80 p-3 shadow-2xl shadow-black/30 sm:p-6'>
+				<div className='mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between'>
 					<div>
 						<p className='text-sm uppercase tracking-[0.35em] text-zinc-400'>
 							Wordle Clone
 						</p>
-						<h1 className='text-3xl font-semibold'>Guess the word</h1>
+						<h1 className='text-2xl font-semibold sm:text-3xl'>
+							Guess the word
+						</h1>
 					</div>
 					<button
 						onClick={handleRestart}
-						className='rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-200 transition hover:bg-zinc-800'
+						className='w-fit rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-200 transition hover:bg-zinc-800'
 					>
 						Reset
 					</button>
 				</div>
 
-				<div className='mb-5 rounded-xl bg-zinc-800/60 p-4 text-center text-sm text-zinc-200'>
+				<div className='mb-4 rounded-xl bg-zinc-800/60 p-3 text-center text-sm text-zinc-200 sm:mb-5 sm:p-4'>
 					{message}
 				</div>
 
-				<div className='mb-6 grid grid-cols-5 gap-2'>
+				<div className='mb-4 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-2'>
 					{board.map((guess, rowIndex) => {
 						const rowLetters = Array.from(guess);
 						return Array.from({ length: WORD_LENGTH }, (_, colIndex) => {
@@ -175,7 +177,7 @@ export default function Home() {
 							return (
 								<div
 									key={`${rowIndex}-${colIndex}`}
-									className={`flex h-14 items-center justify-center rounded-lg border text-xl font-bold uppercase ${getTileClass(state)}`}
+									className={`flex h-12 items-center justify-center rounded-lg border text-lg font-bold uppercase sm:h-14 sm:text-xl md:h-16 ${getTileClass(state)}`}
 								>
 									{letter}
 								</div>
@@ -186,12 +188,15 @@ export default function Home() {
 
 				<div className='space-y-2'>
 					{KEYBOARD_ROWS.map((row) => (
-						<div key={row} className='flex justify-center gap-2'>
+						<div
+							key={row}
+							className='flex flex-wrap justify-center gap-1.5 sm:gap-2'
+						>
 							{row.split('').map((letter) => (
 								<button
 									key={letter}
 									onClick={() => handleLetterClick(letter)}
-									className='rounded-lg bg-zinc-800 px-3 py-3 text-sm font-semibold uppercase text-zinc-100 transition hover:bg-zinc-700'
+									className='touch-manipulation min-h-[44px] rounded-lg bg-zinc-800 px-2 py-2 text-sm font-semibold uppercase text-zinc-100 transition hover:bg-zinc-700 sm:px-3 sm:py-3'
 								>
 									{letter}
 								</button>
@@ -202,13 +207,13 @@ export default function Home() {
 					<div className='flex justify-center gap-2'>
 						<button
 							onClick={handleBackspace}
-							className='rounded-lg bg-zinc-800 px-4 py-3 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700'
+							className='touch-manipulation min-h-[44px] rounded-lg bg-zinc-800 px-3 py-3 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700 sm:px-4'
 						>
 							Delete
 						</button>
 						<button
 							onClick={handleEnter}
-							className='rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500'
+							className='touch-manipulation min-h-[44px] rounded-lg bg-emerald-600 px-3 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 sm:px-4'
 						>
 							Enter
 						</button>

@@ -149,34 +149,29 @@ export default function Home() {
 	};
 
 	return (
-		<main className='flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden bg-zinc-950 px-2 py-4 text-zinc-100 sm:px-4 sm:py-8'>
-			<div className='w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-900/80 p-3 shadow-2xl shadow-black/30 sm:p-6'>
-				<div className='mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between'>
+		<main className='flex min-h-screen w-full items-center justify-center bg-zinc-950 px-3 py-3 text-zinc-100'>
+			<div className='w-full max-w-md rounded-[28px] border border-zinc-800 bg-zinc-900/95 p-3 shadow-2xl shadow-black/40'>
+				<div className='mb-3 flex items-center justify-between'>
 					<div>
-						<p className='text-sm uppercase tracking-[0.35em] text-zinc-400'>
+						<p className='text-[11px] uppercase tracking-[0.35em] text-zinc-400'>
 							Wordle Clone
 						</p>
-						<h1 className='text-2xl font-semibold sm:text-3xl'>
-							Guess the word
-						</h1>
+						<h1 className='text-xl font-semibold'>Guess the word</h1>
 					</div>
 					<button
+						type='button'
 						onClick={handleRestart}
-						className='w-fit rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-200 transition hover:bg-zinc-800'
+						className='rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-200'
 					>
 						Reset
 					</button>
 				</div>
 
-				<div className='mb-4 rounded-xl bg-zinc-800/60 p-3 text-center text-sm text-zinc-200 sm:mb-5 sm:p-4'>
+				<div className='mb-3 rounded-2xl border border-zinc-800 bg-zinc-800/80 p-2.5 text-center text-sm text-zinc-200'>
 					{message}
 				</div>
 
-				<div className='mb-4 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-2 text-sm text-zinc-300 sm:mb-5'>
-					Tap the letters below to enter your guess.
-				</div>
-
-				<div className='mb-4 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-2'>
+				<div className='mb-3 grid grid-cols-5 gap-2'>
 					{board.map((guess, rowIndex) => {
 						const rowLetters = Array.from(guess);
 						return Array.from({ length: WORD_LENGTH }, (_, colIndex) => {
@@ -185,7 +180,7 @@ export default function Home() {
 							return (
 								<div
 									key={`${rowIndex}-${colIndex}`}
-									className={`flex h-12 items-center justify-center rounded-lg border text-lg font-bold uppercase sm:h-14 sm:text-xl md:h-16 ${getTileClass(state)}`}
+									className={`flex h-14 items-center justify-center rounded-2xl border text-xl font-bold uppercase ${getTileClass(state)}`}
 								>
 									{letter}
 								</div>
@@ -194,18 +189,19 @@ export default function Home() {
 					})}
 				</div>
 
+				<div className='mb-3 rounded-2xl border border-zinc-800 bg-zinc-800/70 px-3 py-2 text-center text-sm text-zinc-300'>
+					Current guess: {currentGuess || '—'}
+				</div>
+
 				<div className='space-y-2'>
 					{KEYBOARD_ROWS.map((row) => (
-						<div
-							key={row}
-							className='flex flex-wrap justify-center gap-1.5 sm:gap-2'
-						>
+						<div key={row} className='flex justify-center gap-2'>
 							{row.split('').map((letter) => (
 								<button
 									key={letter}
 									type='button'
-									onPointerDown={() => handleLetterClick(letter)}
-									className='touch-manipulation select-none min-h-[44px] rounded-lg bg-zinc-800 px-2 py-2 text-sm font-semibold uppercase text-zinc-100 transition active:scale-[0.98] active:bg-zinc-700 sm:px-3 sm:py-3'
+									onClick={() => handleLetterClick(letter)}
+									className='min-h-[48px] flex-1 rounded-2xl bg-zinc-800 px-2 py-3 text-sm font-semibold uppercase text-zinc-100 active:bg-zinc-700'
 								>
 									{letter}
 								</button>
@@ -216,15 +212,15 @@ export default function Home() {
 					<div className='flex justify-center gap-2'>
 						<button
 							type='button'
-							onPointerDown={handleBackspace}
-							className='touch-manipulation select-none min-h-[44px] rounded-lg bg-zinc-800 px-3 py-3 text-sm font-semibold text-zinc-100 transition active:scale-[0.98] active:bg-zinc-700 sm:px-4'
+							onClick={handleBackspace}
+							className='min-h-[48px] flex-1 rounded-2xl bg-zinc-800 px-3 py-3 text-sm font-semibold text-zinc-100 active:bg-zinc-700'
 						>
 							Delete
 						</button>
 						<button
 							type='button'
-							onPointerDown={handleEnter}
-							className='touch-manipulation select-none min-h-[44px] rounded-lg bg-emerald-600 px-3 py-3 text-sm font-semibold text-white transition active:scale-[0.98] active:bg-emerald-500 sm:px-4'
+							onClick={handleEnter}
+							className='min-h-[48px] flex-1 rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
 						>
 							Enter
 						</button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { evaluateGuess, getRandomWord, type TileState } from '@/lib/wordle';
 
 const MAX_ATTEMPTS = 6;
@@ -31,6 +31,7 @@ export default function Home() {
 		'playing',
 	);
 	const [message, setMessage] = useState('Guess the hidden 5-letter word.');
+	const inputRef = useRef<HTMLInputElement>(null);
 
 	const board = useMemo(() => {
 		return guesses.map((guess, index) => {
@@ -118,11 +119,13 @@ export default function Home() {
 			return;
 		}
 
+		inputRef.current?.focus();
 		setCurrentGuess((prev) => prev + letter);
 	};
 
 	const handleBackspace = () => {
 		if (gameState === 'playing') {
+			inputRef.current?.focus();
 			setCurrentGuess((prev) => prev.slice(0, -1));
 		}
 	};
@@ -132,7 +135,28 @@ export default function Home() {
 			return;
 		}
 
+		inputRef.current?.focus();
 		submitGuess(currentGuess);
+	};
+
+	const handleInputChange = (value: string) => {
+		const sanitized = value
+			.replace(/[^A-Z]/gi, '')
+			.slice(0, WORD_LENGTH)
+			.toUpperCase();
+		setCurrentGuess(sanitized);
+	};
+
+	const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			handleEnter();
+		}
+
+		if (event.key === 'Backspace') {
+			event.preventDefault();
+			handleBackspace();
+		}
 	};
 
 	const handleRestart = () => {
@@ -168,7 +192,32 @@ export default function Home() {
 					{message}
 				</div>
 
-				<div className='mb-4 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-2'>
+				<input
+					ref={inputRef}
+					type='text'
+					value={currentGuess}
+					onChange={(event) => handleInputChange(event.target.value)}
+					onKeyDown={handleInputKeyDown}
+					inputMode='text'
+					autoCapitalize='characters'
+					autoCorrect='off'
+					spellCheck={false}
+					autoComplete='off'
+					className='sr-only'
+				/>
+
+				<button
+					type='button'
+					onClick={() => inputRef.current?.focus()}
+					className='mb-4 w-full rounded-lg border border-dashed border-zinc-700 bg-zinc-800/60 px-3 py-2 text-center text-sm text-zinc-300 transition hover:bg-zinc-800 sm:mb-5'
+				>
+					Tap here to type with your mobile keyboard
+				</button>
+
+				<div
+					className='mb-4 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-2'
+					onClick={() => inputRef.current?.focus()}
+				>
 					{board.map((guess, rowIndex) => {
 						const rowLetters = Array.from(guess);
 						return Array.from({ length: WORD_LENGTH }, (_, colIndex) => {

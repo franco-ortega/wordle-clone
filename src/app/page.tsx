@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { evaluateGuess, getRandomWord, type TileState } from '@/lib/wordle';
 
 const MAX_ATTEMPTS = 6;
@@ -31,7 +31,6 @@ export default function Home() {
 		'playing',
 	);
 	const [message, setMessage] = useState('Guess the hidden 5-letter word.');
-	const inputRef = useRef<HTMLInputElement>(null);
 
 	const board = useMemo(() => {
 		return guesses.map((guess, index) => {
@@ -119,8 +118,7 @@ export default function Home() {
 			return;
 		}
 
-		inputRef.current?.focus();
-		setCurrentGuess((prev) => prev + letter);
+		setCurrentGuess((prev) => prev + letter.toUpperCase());
 	};
 
 	const handleLetterClick = (letter: string) => {
@@ -129,7 +127,6 @@ export default function Home() {
 
 	const handleBackspace = () => {
 		if (gameState === 'playing') {
-			inputRef.current?.focus();
 			setCurrentGuess((prev) => prev.slice(0, -1));
 		}
 	};
@@ -139,28 +136,7 @@ export default function Home() {
 			return;
 		}
 
-		inputRef.current?.focus();
 		submitGuess(currentGuess);
-	};
-
-	const handleInputChange = (value: string) => {
-		const sanitized = value
-			.replace(/[^A-Z]/gi, '')
-			.slice(0, WORD_LENGTH)
-			.toUpperCase();
-		setCurrentGuess(sanitized);
-	};
-
-	const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		if (event.key === 'Enter') {
-			event.preventDefault();
-			handleEnter();
-		}
-
-		if (event.key === 'Backspace') {
-			event.preventDefault();
-			handleBackspace();
-		}
 	};
 
 	const handleRestart = () => {
@@ -196,26 +172,11 @@ export default function Home() {
 					{message}
 				</div>
 
-				<input
-					ref={inputRef}
-					type='text'
-					value={currentGuess}
-					onChange={(event) => handleInputChange(event.target.value)}
-					onInput={(event) => handleInputChange(event.currentTarget.value)}
-					onKeyDown={handleInputKeyDown}
-					inputMode='text'
-					autoCapitalize='characters'
-					autoCorrect='off'
-					spellCheck={false}
-					autoComplete='off'
-					placeholder='Tap here to type letters'
-					className='mb-4 w-full rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-3 text-base text-white outline-none transition focus:border-emerald-500 sm:mb-5'
-				/>
+				<div className='mb-4 rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-2 text-sm text-zinc-300 sm:mb-5'>
+					Tap the letters below to enter your guess.
+				</div>
 
-				<div
-					className='mb-4 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-2'
-					onClick={() => inputRef.current?.focus()}
-				>
+				<div className='mb-4 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-2'>
 					{board.map((guess, rowIndex) => {
 						const rowLetters = Array.from(guess);
 						return Array.from({ length: WORD_LENGTH }, (_, colIndex) => {
@@ -243,11 +204,11 @@ export default function Home() {
 								<button
 									key={letter}
 									type='button'
-									onPointerDown={(event) => {
+									onMouseDown={(event) => {
 										event.preventDefault();
 										handleLetterClick(letter);
 									}}
-									onClick={(event) => {
+									onTouchStart={(event) => {
 										event.preventDefault();
 										handleLetterClick(letter);
 									}}
@@ -262,11 +223,11 @@ export default function Home() {
 					<div className='flex justify-center gap-2'>
 						<button
 							type='button'
-							onPointerDown={(event) => {
+							onMouseDown={(event) => {
 								event.preventDefault();
 								handleBackspace();
 							}}
-							onClick={(event) => {
+							onTouchStart={(event) => {
 								event.preventDefault();
 								handleBackspace();
 							}}
@@ -276,11 +237,11 @@ export default function Home() {
 						</button>
 						<button
 							type='button'
-							onPointerDown={(event) => {
+							onMouseDown={(event) => {
 								event.preventDefault();
 								handleEnter();
 							}}
-							onClick={(event) => {
+							onTouchStart={(event) => {
 								event.preventDefault();
 								handleEnter();
 							}}

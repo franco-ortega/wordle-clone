@@ -203,16 +203,9 @@ export default function Home() {
 					autoCorrect='off'
 					spellCheck={false}
 					autoComplete='off'
-					className='sr-only'
+					placeholder='Tap here to type letters'
+					className='mb-4 w-full rounded-lg border border-zinc-700 bg-zinc-800/70 px-3 py-3 text-base text-white outline-none transition focus:border-emerald-500 sm:mb-5'
 				/>
-
-				<button
-					type='button'
-					onClick={() => inputRef.current?.focus()}
-					className='mb-4 w-full rounded-lg border border-dashed border-zinc-700 bg-zinc-800/60 px-3 py-2 text-center text-sm text-zinc-300 transition hover:bg-zinc-800 sm:mb-5'
-				>
-					Tap here to type with your mobile keyboard
-				</button>
 
 				<div
 					className='mb-4 grid grid-cols-5 gap-1.5 sm:mb-6 sm:gap-2'

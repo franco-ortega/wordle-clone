@@ -204,15 +204,8 @@ export default function Home() {
 								<button
 									key={letter}
 									type='button'
-									onMouseDown={(event) => {
-										event.preventDefault();
-										handleLetterClick(letter);
-									}}
-									onTouchStart={(event) => {
-										event.preventDefault();
-										handleLetterClick(letter);
-									}}
-									className='touch-manipulation min-h-[44px] rounded-lg bg-zinc-800 px-2 py-2 text-sm font-semibold uppercase text-zinc-100 transition hover:bg-zinc-700 sm:px-3 sm:py-3'
+									onPointerDown={() => handleLetterClick(letter)}
+									className='touch-manipulation select-none min-h-[44px] rounded-lg bg-zinc-800 px-2 py-2 text-sm font-semibold uppercase text-zinc-100 transition active:scale-[0.98] active:bg-zinc-700 sm:px-3 sm:py-3'
 								>
 									{letter}
 								</button>
@@ -223,29 +216,15 @@ export default function Home() {
 					<div className='flex justify-center gap-2'>
 						<button
 							type='button'
-							onMouseDown={(event) => {
-								event.preventDefault();
-								handleBackspace();
-							}}
-							onTouchStart={(event) => {
-								event.preventDefault();
-								handleBackspace();
-							}}
-							className='touch-manipulation min-h-[44px] rounded-lg bg-zinc-800 px-3 py-3 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700 sm:px-4'
+							onPointerDown={handleBackspace}
+							className='touch-manipulation select-none min-h-[44px] rounded-lg bg-zinc-800 px-3 py-3 text-sm font-semibold text-zinc-100 transition active:scale-[0.98] active:bg-zinc-700 sm:px-4'
 						>
 							Delete
 						</button>
 						<button
 							type='button'
-							onMouseDown={(event) => {
-								event.preventDefault();
-								handleEnter();
-							}}
-							onTouchStart={(event) => {
-								event.preventDefault();
-								handleEnter();
-							}}
-							className='touch-manipulation min-h-[44px] rounded-lg bg-emerald-600 px-3 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 sm:px-4'
+							onPointerDown={handleEnter}
+							className='touch-manipulation select-none min-h-[44px] rounded-lg bg-emerald-600 px-3 py-3 text-sm font-semibold text-white transition active:scale-[0.98] active:bg-emerald-500 sm:px-4'
 						>
 							Enter
 						</button>

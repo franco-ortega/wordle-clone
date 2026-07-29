@@ -5,7 +5,6 @@ import { evaluateGuess, getRandomWord, type TileState } from '@/lib/wordle';
 
 const MAX_ATTEMPTS = 6;
 const WORD_LENGTH = 5;
-const KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
 
 function getTileClass(state: TileState | undefined) {
 	switch (state) {
@@ -25,12 +24,14 @@ export default function Home() {
 	const [guesses, setGuesses] = useState<string[]>(
 		Array(MAX_ATTEMPTS).fill(''),
 	);
-	const [currentGuess, setCurrentGuess] = useState('');
+	const [letters, setLetters] = useState<string[]>(Array(WORD_LENGTH).fill(''));
 	const [attempt, setAttempt] = useState(0);
 	const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>(
 		'playing',
 	);
 	const [message, setMessage] = useState('Guess the hidden 5-letter word.');
+
+	const currentGuess = letters.join('');
 
 	const board = useMemo(() => {
 		return guesses.map((guess, index) => {
@@ -74,11 +75,23 @@ export default function Home() {
 			}
 
 			setAttempt((prev) => prev + 1);
-			setCurrentGuess('');
+			setLetters(Array(WORD_LENGTH).fill(''));
 			setMessage('Try another word.');
 		},
 		[attempt, guesses, targetWord],
 	);
+
+	const handleLetterChange = (index: number, value: string) => {
+		const sanitized = value
+			.replace(/[^A-Z]/gi, '')
+			.slice(0, 1)
+			.toUpperCase();
+		setLetters((prev) => {
+			const next = [...prev];
+			next[index] = sanitized;
+			return next;
+		});
+	};
 
 	const handleKeyDown = useCallback(
 		(event: KeyboardEvent) => {
@@ -88,24 +101,40 @@ export default function Home() {
 				return;
 			}
 
-			if (/^[A-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
+			if (/^[A-Z]$/.test(key)) {
 				event.preventDefault();
-				setCurrentGuess((prev) => prev + key);
+				setLetters((prev) => {
+					const next = [...prev];
+					const firstEmpty = next.findIndex((letter) => letter === '');
+					if (firstEmpty >= 0) {
+						next[firstEmpty] = key;
+					}
+					return next;
+				});
 				return;
 			}
 
 			if (key === 'BACKSPACE') {
 				event.preventDefault();
-				setCurrentGuess((prev) => prev.slice(0, -1));
+				setLetters((prev) => {
+					const next = [...prev];
+					for (let index = next.length - 1; index >= 0; index -= 1) {
+						if (next[index] !== '') {
+							next[index] = '';
+							break;
+						}
+					}
+					return next;
+				});
 				return;
 			}
 
 			if (key === 'ENTER') {
 				event.preventDefault();
-				submitGuess(currentGuess);
+				handleSubmit();
 			}
 		},
-		[currentGuess, gameState, submitGuess],
+		[gameState],
 	);
 
 	useEffect(() => {
@@ -113,25 +142,7 @@ export default function Home() {
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [handleKeyDown]);
 
-	const appendLetter = (letter: string) => {
-		if (gameState !== 'playing' || currentGuess.length >= WORD_LENGTH) {
-			return;
-		}
-
-		setCurrentGuess((prev) => prev + letter.toUpperCase());
-	};
-
-	const handleLetterClick = (letter: string) => {
-		appendLetter(letter);
-	};
-
-	const handleBackspace = () => {
-		if (gameState === 'playing') {
-			setCurrentGuess((prev) => prev.slice(0, -1));
-		}
-	};
-
-	const handleEnter = () => {
+	const handleSubmit = () => {
 		if (gameState !== 'playing') {
 			return;
 		}
@@ -142,7 +153,7 @@ export default function Home() {
 	const handleRestart = () => {
 		setTargetWord(getRandomWord());
 		setGuesses(Array(MAX_ATTEMPTS).fill(''));
-		setCurrentGuess('');
+		setLetters(Array(WORD_LENGTH).fill(''));
 		setAttempt(0);
 		setGameState('playing');
 		setMessage('Guess the hidden 5-letter word.');
@@ -190,42 +201,42 @@ export default function Home() {
 				</div>
 
 				<div className='mb-3 rounded-2xl border border-zinc-800 bg-zinc-800/70 px-3 py-2 text-center text-sm text-zinc-300'>
-					Current guess: {currentGuess || '—'}
+					Enter one letter in each box, then submit.
 				</div>
 
-				<div className='space-y-2'>
-					{KEYBOARD_ROWS.map((row) => (
-						<div key={row} className='flex justify-center gap-2'>
-							{row.split('').map((letter) => (
-								<button
-									key={letter}
-									type='button'
-									onClick={() => handleLetterClick(letter)}
-									className='min-h-[48px] flex-1 rounded-2xl bg-zinc-800 px-2 py-3 text-sm font-semibold uppercase text-zinc-100 active:bg-zinc-700'
-								>
-									{letter}
-								</button>
-							))}
-						</div>
-					))}
-
-					<div className='flex justify-center gap-2'>
-						<button
-							type='button'
-							onClick={handleBackspace}
-							className='min-h-[48px] flex-1 rounded-2xl bg-zinc-800 px-3 py-3 text-sm font-semibold text-zinc-100 active:bg-zinc-700'
-						>
-							Delete
-						</button>
-						<button
-							type='button'
-							onClick={handleEnter}
-							className='min-h-[48px] flex-1 rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
-						>
-							Enter
-						</button>
+				<form
+					onSubmit={(event) => {
+						event.preventDefault();
+						handleSubmit();
+					}}
+					className='flex flex-col gap-2'
+				>
+					<div className='grid grid-cols-5 gap-2'>
+						{letters.map((letter, index) => (
+							<input
+								key={index}
+								type='text'
+								inputMode='text'
+								maxLength={1}
+								value={letter}
+								onChange={(event) =>
+									handleLetterChange(index, event.target.value)
+								}
+								autoCapitalize='characters'
+								autoCorrect='off'
+								spellCheck={false}
+								autoComplete='off'
+								className='min-h-[48px] rounded-2xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-center text-base font-semibold uppercase text-white outline-none focus:border-emerald-500'
+							/>
+						))}
 					</div>
-				</div>
+					<button
+						type='submit'
+						className='min-h-[48px] rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
+					>
+						Submit Guess
+					</button>
+				</form>
 			</div>
 		</main>
 	);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { evaluateGuess, getRandomWord, type TileState } from '@/lib/wordle';
 
 const MAX_ATTEMPTS = 6;
@@ -30,6 +30,7 @@ export default function Home() {
 		'playing',
 	);
 	const [message, setMessage] = useState('Guess the hidden 5-letter word.');
+	const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
 	const currentGuess = letters.join('');
 
@@ -147,7 +148,12 @@ export default function Home() {
 			return;
 		}
 
-		submitGuess(currentGuess);
+		const guessFromInputs = inputRefs.current
+			.map((input) => input?.value ?? '')
+			.join('')
+			.toUpperCase();
+
+		submitGuess(guessFromInputs);
 	};
 
 	const handleRestart = () => {
@@ -215,6 +221,9 @@ export default function Home() {
 						{letters.map((letter, index) => (
 							<input
 								key={index}
+								ref={(element) => {
+									inputRefs.current[index] = element;
+								}}
 								type='text'
 								inputMode='text'
 								maxLength={1}

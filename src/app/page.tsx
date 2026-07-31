@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { evaluateGuess, getRandomWord, type TileState } from '@/lib/wordle';
 
 const MAX_ATTEMPTS = 6;
@@ -30,9 +30,8 @@ export default function Home() {
 		'playing',
 	);
 	const [message, setMessage] = useState('Guess the hidden 5-letter word.');
-	const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-	const currentGuess = letters.join('');
+	const currentGuess = letters.join('').toUpperCase();
 
 	const board = useMemo(() => {
 		return guesses.map((guess, index) => {
@@ -54,16 +53,20 @@ export default function Home() {
 
 	const submitGuess = useCallback(
 		(guess: string) => {
-			if (guess.length < WORD_LENGTH) {
+			const normalizedGuess = guess.toUpperCase();
+
+			if (normalizedGuess.length < WORD_LENGTH) {
 				setMessage('Enter a full 5-letter word.');
 				return;
 			}
 
-			const nextGuesses = [...guesses];
-			nextGuesses[attempt] = guess;
-			setGuesses(nextGuesses);
+			setGuesses((prevGuesses) => {
+				const nextGuesses = [...prevGuesses];
+				nextGuesses[attempt] = normalizedGuess;
+				return nextGuesses;
+			});
 
-			if (guess === targetWord) {
+			if (normalizedGuess === targetWord) {
 				setGameState('won');
 				setMessage('You solved it!');
 				return;
@@ -79,7 +82,7 @@ export default function Home() {
 			setLetters(Array(WORD_LENGTH).fill(''));
 			setMessage('Try another word.');
 		},
-		[attempt, guesses, targetWord],
+		[attempt, targetWord],
 	);
 
 	const handleLetterChange = (index: number, value: string) => {
@@ -148,12 +151,7 @@ export default function Home() {
 			return;
 		}
 
-		const guessFromInputs = inputRefs.current
-			.map((input) => input?.value ?? '')
-			.join('')
-			.toUpperCase();
-
-		submitGuess(guessFromInputs);
+		submitGuess(currentGuess);
 	};
 
 	const handleRestart = () => {
@@ -221,9 +219,6 @@ export default function Home() {
 						{letters.map((letter, index) => (
 							<input
 								key={index}
-								ref={(element) => {
-									inputRefs.current[index] = element;
-								}}
 								type='text'
 								inputMode='text'
 								maxLength={1}

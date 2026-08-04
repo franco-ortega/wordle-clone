@@ -35,10 +35,15 @@ export default function Home() {
 
 	const board = useMemo(() => {
 		return guesses.map((guess, index) => {
+			// Prefer showing a committed guess if present. Otherwise show the
+			// current in-progress guess for the active row.
+			if (guess) {
+				return guess;
+			}
 			if (index === attempt) {
 				return currentGuess.padEnd(WORD_LENGTH, '');
 			}
-			return guess;
+			return '';
 		});
 	}, [attempt, currentGuess, guesses]);
 

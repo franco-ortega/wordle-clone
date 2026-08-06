@@ -32,17 +32,42 @@ export default function Home() {
 	);
 	const [activeRow, setActiveRow] = useState(0);
 	const [message, setMessage] = useState('Enter a full 5-letter word.');
+	const [isComposing, setIsComposing] = useState(false);
 
 	const handleChange = (index: number, value: string) => {
+		if (isComposing) {
+			return;
+		}
+
 		const letter = value
-			.replace(/[^A-Za-z]/g, '')
-			.slice(0, 1)
-			.toUpperCase();
+			.toUpperCase()
+			.replace(/[^A-Z]/g, '')
+			.slice(0, 1);
+
 		setBoard((prev) => {
 			const next = prev.map((r) => [...r]);
+
+			if (value === '') {
+				next[activeRow][index] = '';
+				return next;
+			}
+
+			if (!letter) {
+				return prev;
+			}
+
 			next[activeRow][index] = letter;
 			return next;
 		});
+	};
+
+	const handleCompositionStart = () => {
+		setIsComposing(true);
+	};
+
+	const handleCompositionEnd = (index: number, value: string) => {
+		setIsComposing(false);
+		handleChange(index, value);
 	};
 
 	const submitRow = (e?: React.FormEvent) => {
@@ -118,7 +143,7 @@ export default function Home() {
 						row.map((ch, ci) => (
 							<div
 								key={`${ri}-${ci}`}
-								className={`flex h-14 items-center justify-center rounded-2xl border text-xl font-bold uppercase ${getTileClass(evaluations[ri]?.[ci])}`}
+								className={`flex h-14 items-center justify-center rounded-2xl border text-xl font-bold uppercase ${getTileClass(evaluations[ri]?.[ci])} ${ri === activeRow ? 'border-emerald-400 ring-2 ring-emerald-500/25 bg-zinc-800 shadow-[0_0_0_0_2px_rgba(16,185,129,0.15)]' : ''}`}
 							>
 								{ch}
 							</div>
@@ -127,7 +152,7 @@ export default function Home() {
 				</div>
 
 				<form onSubmit={submitRow} className='flex flex-col gap-2'>
-					<div className='grid grid-cols-5 gap-2'>
+					<div className='grid grid-cols-5 gap-2 rounded-2xl border border-emerald-500/20 bg-zinc-900/90 p-2 shadow-[0_0_0_0_1px_rgba(16,185,129,0.15)]'>
 						{board[activeRow].map((val, i) => (
 							<input
 								key={i}
@@ -136,17 +161,19 @@ export default function Home() {
 								maxLength={1}
 								value={val}
 								onChange={(e) => handleChange(i, e.target.value)}
+								onInput={(e) => handleChange(i, e.currentTarget.value)}
 								autoCapitalize='characters'
+								autoFocus={i === 0}
 								autoCorrect='off'
 								spellCheck={false}
 								autoComplete='off'
-								className='min-h-[48px] rounded-2xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-center text-base font-semibold uppercase text-white outline-none focus:border-emerald-500'
+								className='min-h-[12] rounded-2xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-center text-base font-semibold uppercase text-white outline-none focus:border-emerald-500'
 							/>
 						))}
 					</div>
 					<button
 						type='submit'
-						className='min-h-[48px] rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
+						className='min-h-[12] rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
 					>
 						Submit Guess
 					</button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { evaluateGuess, getRandomWord, type TileState } from '@/lib/wordle';
 
 const MAX_ATTEMPTS = 6;
@@ -21,149 +21,82 @@ function getTileClass(state: TileState | undefined) {
 
 export default function Home() {
 	const [targetWord, setTargetWord] = useState(() => getRandomWord());
-	const [guesses, setGuesses] = useState<string[]>(
-		Array(MAX_ATTEMPTS).fill(''),
+	const [board, setBoard] = useState<string[][]>(() =>
+		Array.from({ length: MAX_ATTEMPTS }, () => Array(WORD_LENGTH).fill('')),
 	);
-	const [letters, setLetters] = useState<string[]>(Array(WORD_LENGTH).fill(''));
-	const [attempt, setAttempt] = useState(0);
+	const [evaluations, setEvaluations] = useState<(TileState | undefined)[][]>(
+		() =>
+			Array.from({ length: MAX_ATTEMPTS }, () =>
+				Array(WORD_LENGTH).fill(undefined),
+			),
+	);
+	const [activeRow, setActiveRow] = useState(0);
 	const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>(
 		'playing',
 	);
 	const [message, setMessage] = useState('Guess the hidden 5-letter word.');
-
-	const currentGuess = letters.join('').toUpperCase();
-
-	const board = useMemo(() => {
-		return guesses.map((guess, index) => {
-			// Prefer showing a committed guess if present. Otherwise show the
-			// current in-progress guess for the active row.
-			if (guess) {
-				return guess;
-			}
-			if (index === attempt) {
-				return currentGuess.padEnd(WORD_LENGTH, '');
-			}
-			return '';
-		});
-	}, [attempt, currentGuess, guesses]);
-
-	const evaluations = useMemo(() => {
-		return guesses.map((guess, index) => {
-			if (index < attempt && guess) {
-				return evaluateGuess(guess, targetWord);
-			}
-			return Array(WORD_LENGTH).fill(undefined) as (TileState | undefined)[];
-		});
-	}, [attempt, guesses, targetWord]);
-
-	const submitGuess = useCallback(
-		(guess: string) => {
-			const normalizedGuess = guess.toUpperCase();
-
-			if (normalizedGuess.length < WORD_LENGTH) {
-				setMessage('Enter a full 5-letter word.');
-				return;
-			}
-
-			setGuesses((prevGuesses) => {
-				const nextGuesses = [...prevGuesses];
-				nextGuesses[attempt] = normalizedGuess;
-				return nextGuesses;
-			});
-
-			if (normalizedGuess === targetWord) {
-				setGameState('won');
-				setMessage('You solved it!');
-				return;
-			}
-
-			if (attempt === MAX_ATTEMPTS - 1) {
-				setGameState('lost');
-				setMessage(`The word was ${targetWord}.`);
-				return;
-			}
-
-			setAttempt((prev) => prev + 1);
-			setLetters(Array(WORD_LENGTH).fill(''));
-			setMessage('Try another word.');
-		},
-		[attempt, targetWord],
-	);
 
 	const handleLetterChange = (index: number, value: string) => {
 		const sanitized = value
 			.replace(/[^A-Z]/gi, '')
 			.slice(0, 1)
 			.toUpperCase();
-		setLetters((prev) => {
-			const next = [...prev];
-			next[index] = sanitized;
+		setBoard((prev) => {
+			const next = prev.map((row) => [...row]);
+			next[activeRow][index] = sanitized;
 			return next;
 		});
 	};
 
-	const handleKeyDown = useCallback(
-		(event: KeyboardEvent) => {
-			const key = event.key.toUpperCase();
+	const currentGuess = board[activeRow].join('');
 
-			if (gameState !== 'playing') {
-				return;
-			}
-
-			if (/^[A-Z]$/.test(key)) {
-				event.preventDefault();
-				setLetters((prev) => {
-					const next = [...prev];
-					const firstEmpty = next.findIndex((letter) => letter === '');
-					if (firstEmpty >= 0) {
-						next[firstEmpty] = key;
-					}
-					return next;
-				});
-				return;
-			}
-
-			if (key === 'BACKSPACE') {
-				event.preventDefault();
-				setLetters((prev) => {
-					const next = [...prev];
-					for (let index = next.length - 1; index >= 0; index -= 1) {
-						if (next[index] !== '') {
-							next[index] = '';
-							break;
-						}
-					}
-					return next;
-				});
-				return;
-			}
-
-			if (key === 'ENTER') {
-				event.preventDefault();
-				handleSubmit();
-			}
-		},
-		[gameState],
-	);
-
-	useEffect(() => {
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, [handleKeyDown]);
-
-	const handleSubmit = () => {
+	const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
+		event?.preventDefault();
 		if (gameState !== 'playing') {
 			return;
 		}
 
-		submitGuess(currentGuess);
+		if (board[activeRow].some((letter) => letter === '')) {
+			setMessage('Enter a full 5-letter word.');
+			return;
+		}
+
+		const guess = currentGuess;
+		const evaluation = evaluateGuess(guess, targetWord);
+
+		setEvaluations((prev) => {
+			const next = prev.map((row) => [...row]);
+			next[activeRow] = evaluation;
+			return next;
+		});
+
+		if (guess === targetWord) {
+			setGameState('won');
+			setMessage('You solved it!');
+			return;
+		}
+
+		if (activeRow === MAX_ATTEMPTS - 1) {
+			setGameState('lost');
+			setMessage(`The word was ${targetWord}.`);
+			return;
+		}
+
+		setActiveRow((prev) => prev + 1);
+		setMessage('Try another word.');
 	};
 
 	const handleRestart = () => {
 		setTargetWord(getRandomWord());
-		setGuesses(Array(MAX_ATTEMPTS).fill(''));
-		setLetters(Array(WORD_LENGTH).fill(''));
-		setAttempt(0);
+		setBoard(
+			Array.from({ length: MAX_ATTEMPTS }, () => Array(WORD_LENGTH).fill('')),
+		);
+		setEvaluations(
+			Array.from({ length: MAX_ATTEMPTS }, () =>
+				Array(WORD_LENGTH).fill(undefined),
+			),
+		);
+		setActiveRow(0);
 		setGameState('playing');
 		setMessage('Guess the hidden 5-letter word.');
 	};
@@ -192,10 +125,8 @@ export default function Home() {
 				</div>
 
 				<div className='mb-3 grid grid-cols-5 gap-2'>
-					{board.map((guess, rowIndex) => {
-						const rowLetters = Array.from(guess);
-						return Array.from({ length: WORD_LENGTH }, (_, colIndex) => {
-							const letter = rowLetters[colIndex] ?? '';
+					{board.map((row, rowIndex) =>
+						row.map((letter, colIndex) => {
 							const state = evaluations[rowIndex]?.[colIndex];
 							return (
 								<div
@@ -205,23 +136,17 @@ export default function Home() {
 									{letter}
 								</div>
 							);
-						});
-					})}
+						}),
+					)}
 				</div>
 
 				<div className='mb-3 rounded-2xl border border-zinc-800 bg-zinc-800/70 px-3 py-2 text-center text-sm text-zinc-300'>
 					Enter one letter in each box, then submit.
 				</div>
 
-				<form
-					onSubmit={(event) => {
-						event.preventDefault();
-						handleSubmit();
-					}}
-					className='flex flex-col gap-2'
-				>
+				<form onSubmit={handleSubmit} className='flex flex-col gap-2'>
 					<div className='grid grid-cols-5 gap-2'>
-						{letters.map((letter, index) => (
+						{board[activeRow].map((letter, index) => (
 							<input
 								key={index}
 								type='text'

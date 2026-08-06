@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { evaluateGuess, getRandomWord, type TileState } from '@/lib/wordle';
+import { evaluateGuess, getRandomWord } from '@/lib/wordle';
+import type { TileState } from '@/lib/wordle';
 
 const MAX_ATTEMPTS = 6;
 const WORD_LENGTH = 5;
@@ -21,72 +22,61 @@ function getTileClass(state: TileState | undefined) {
 
 export default function Home() {
 	const [targetWord, setTargetWord] = useState(() => getRandomWord());
-	const [board, setBoard] = useState<string[][]>(() =>
+	const [board, setBoard] = useState(() =>
 		Array.from({ length: MAX_ATTEMPTS }, () => Array(WORD_LENGTH).fill('')),
 	);
-	const [evaluations, setEvaluations] = useState<(TileState | undefined)[][]>(
-		() =>
-			Array.from({ length: MAX_ATTEMPTS }, () =>
-				Array(WORD_LENGTH).fill(undefined),
-			),
+	const [evaluations, setEvaluations] = useState(() =>
+		Array.from({ length: MAX_ATTEMPTS }, () =>
+			Array(WORD_LENGTH).fill(undefined as TileState | undefined),
+		),
 	);
 	const [activeRow, setActiveRow] = useState(0);
-	const [gameState, setGameState] = useState<'playing' | 'won' | 'lost'>(
-		'playing',
-	);
-	const [message, setMessage] = useState('Guess the hidden 5-letter word.');
+	const [message, setMessage] = useState('Enter a full 5-letter word.');
 
-	const handleLetterChange = (index: number, value: string) => {
-		const sanitized = value
-			.replace(/[^A-Z]/gi, '')
+	const handleChange = (index: number, value: string) => {
+		const letter = value
+			.replace(/[^A-Za-z]/g, '')
 			.slice(0, 1)
 			.toUpperCase();
 		setBoard((prev) => {
-			const next = prev.map((row) => [...row]);
-			next[activeRow][index] = sanitized;
+			const next = prev.map((r) => [...r]);
+			next[activeRow][index] = letter;
 			return next;
 		});
 	};
 
-	const currentGuess = board[activeRow].join('');
-
-	const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
-		event?.preventDefault();
-		if (gameState !== 'playing') {
-			return;
-		}
-
-		if (board[activeRow].some((letter) => letter === '')) {
+	const submitRow = (e?: React.FormEvent) => {
+		e?.preventDefault();
+		const row = board[activeRow];
+		if (row.some((c) => c === '')) {
 			setMessage('Enter a full 5-letter word.');
 			return;
 		}
 
-		const guess = currentGuess;
-		const evaluation = evaluateGuess(guess, targetWord);
+		const guess = row.join('');
+		const evalRow = evaluateGuess(guess, targetWord);
 
 		setEvaluations((prev) => {
-			const next = prev.map((row) => [...row]);
-			next[activeRow] = evaluation;
+			const next = prev.map((r) => [...r]);
+			next[activeRow] = evalRow;
 			return next;
 		});
 
 		if (guess === targetWord) {
-			setGameState('won');
 			setMessage('You solved it!');
 			return;
 		}
 
 		if (activeRow === MAX_ATTEMPTS - 1) {
-			setGameState('lost');
 			setMessage(`The word was ${targetWord}.`);
 			return;
 		}
 
-		setActiveRow((prev) => prev + 1);
+		setActiveRow((r) => r + 1);
 		setMessage('Try another word.');
 	};
 
-	const handleRestart = () => {
+	const restart = () => {
 		setTargetWord(getRandomWord());
 		setBoard(
 			Array.from({ length: MAX_ATTEMPTS }, () => Array(WORD_LENGTH).fill('')),
@@ -97,8 +87,7 @@ export default function Home() {
 			),
 		);
 		setActiveRow(0);
-		setGameState('playing');
-		setMessage('Guess the hidden 5-letter word.');
+		setMessage('Enter a full 5-letter word.');
 	};
 
 	return (
@@ -113,7 +102,7 @@ export default function Home() {
 					</div>
 					<button
 						type='button'
-						onClick={handleRestart}
+						onClick={restart}
 						className='rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-200'
 					>
 						Reset
@@ -125,37 +114,28 @@ export default function Home() {
 				</div>
 
 				<div className='mb-3 grid grid-cols-5 gap-2'>
-					{board.map((row, rowIndex) =>
-						row.map((letter, colIndex) => {
-							const state = evaluations[rowIndex]?.[colIndex];
-							return (
-								<div
-									key={`${rowIndex}-${colIndex}`}
-									className={`flex h-14 items-center justify-center rounded-2xl border text-xl font-bold uppercase ${getTileClass(state)}`}
-								>
-									{letter}
-								</div>
-							);
-						}),
+					{board.map((row, ri) =>
+						row.map((ch, ci) => (
+							<div
+								key={`${ri}-${ci}`}
+								className={`flex h-14 items-center justify-center rounded-2xl border text-xl font-bold uppercase ${getTileClass(evaluations[ri]?.[ci])}`}
+							>
+								{ch}
+							</div>
+						)),
 					)}
 				</div>
 
-				<div className='mb-3 rounded-2xl border border-zinc-800 bg-zinc-800/70 px-3 py-2 text-center text-sm text-zinc-300'>
-					Enter one letter in each box, then submit.
-				</div>
-
-				<form onSubmit={handleSubmit} className='flex flex-col gap-2'>
+				<form onSubmit={submitRow} className='flex flex-col gap-2'>
 					<div className='grid grid-cols-5 gap-2'>
-						{board[activeRow].map((letter, index) => (
+						{board[activeRow].map((val, i) => (
 							<input
-								key={index}
+								key={i}
 								type='text'
 								inputMode='text'
 								maxLength={1}
-								value={letter}
-								onChange={(event) =>
-									handleLetterChange(index, event.target.value)
-								}
+								value={val}
+								onChange={(e) => handleChange(i, e.target.value)}
 								autoCapitalize='characters'
 								autoCorrect='off'
 								spellCheck={false}

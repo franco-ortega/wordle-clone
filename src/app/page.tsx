@@ -134,15 +134,29 @@ export default function Home() {
 					</button>
 				</div>
 
-				<div className='mb-3 rounded-2xl border border-zinc-800 bg-zinc-800/80 p-2.5 text-center text-sm text-zinc-200'>
+				<div
+					className='mb-3 rounded-2xl border border-zinc-800 bg-zinc-800/80 p-2.5 text-center text-sm text-zinc-200'
+					role='status'
+					aria-live='polite'
+				>
 					{message}
 				</div>
 
-				<div className='mb-3 grid grid-cols-5 gap-2'>
+				<div
+					className='mb-3 grid grid-cols-5 gap-2'
+					role='grid'
+					aria-label='Wordle board'
+				>
 					{board.map((row, ri) =>
 						row.map((ch, ci) => (
 							<div
 								key={`${ri}-${ci}`}
+								role='gridcell'
+								aria-label={
+									ri === activeRow
+										? `Current row letter ${ci + 1}: ${ch || 'empty'}`
+										: `Row ${ri + 1} letter ${ci + 1}: ${ch || 'empty'}`
+								}
 								className={`flex h-14 items-center justify-center rounded-2xl border text-xl font-bold uppercase ${getTileClass(evaluations[ri]?.[ci])} ${ri === activeRow ? 'border-emerald-400 ring-2 ring-emerald-500/25 bg-zinc-800 shadow-[0_0_0_0_2px_rgba(16,185,129,0.15)]' : ''}`}
 							>
 								{ch}
@@ -150,13 +164,20 @@ export default function Home() {
 						)),
 					)}
 				</div>
-
-				<form onSubmit={submitRow} className='flex flex-col gap-2'>
+				<div
+					className='flex flex-col gap-2'
+					role='group'
+					aria-labelledby='guess-input-label'
+				>
+					<div id='guess-input-label' className='sr-only'>
+						Current guess input row
+					</div>
 					<div className='grid grid-cols-5 gap-2 rounded-2xl border border-emerald-500/20 bg-zinc-900/90 p-2 shadow-[0_0_0_0_1px_rgba(16,185,129,0.15)]'>
 						{board[activeRow].map((val, i) => (
 							<input
 								key={i}
 								type='text'
+								aria-label={`Guess letter ${i + 1}`}
 								inputMode='text'
 								maxLength={1}
 								value={val}
@@ -172,12 +193,13 @@ export default function Home() {
 						))}
 					</div>
 					<button
-						type='submit'
+						type='button'
+						onClick={submitRow}
 						className='min-h-[12] rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
 					>
 						Submit Guess
 					</button>
-				</form>
+				</div>
 			</div>
 		</main>
 	);

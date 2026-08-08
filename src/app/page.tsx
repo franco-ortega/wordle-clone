@@ -183,6 +183,10 @@ export default function Home() {
 								value={val}
 								onChange={(e) => handleChange(i, e.target.value)}
 								onInput={(e) => handleChange(i, e.currentTarget.value)}
+								onCompositionStart={handleCompositionStart}
+								onCompositionEnd={(e) =>
+									handleCompositionEnd(i, e.currentTarget.value)
+								}
 								autoCapitalize='characters'
 								autoFocus={i === 0}
 								autoCorrect='off'

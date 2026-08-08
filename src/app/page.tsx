@@ -32,17 +32,19 @@ export default function Home() {
 	);
 	const [activeRow, setActiveRow] = useState(0);
 	const [message, setMessage] = useState('Enter a full 5-letter word.');
-	const [isComposing, setIsComposing] = useState(false);
 
-	const handleChange = (index: number, value: string) => {
-		if (isComposing) {
-			return;
+	const normalizeLetter = (value: string) => {
+		const raw = value.trim().slice(-1).toUpperCase();
+		if (raw.length !== 1) {
+			return '';
 		}
 
-		const letter = value
-			.toUpperCase()
-			.replace(/[^A-Z]/g, '')
-			.slice(0, 1);
+		const code = raw.charCodeAt(0);
+		return code >= 65 && code <= 90 ? raw : '';
+	};
+
+	const handleChange = (index: number, value: string) => {
+		const letter = normalizeLetter(value);
 
 		setBoard((prev) => {
 			const next = prev.map((r) => [...r]);
@@ -61,17 +63,29 @@ export default function Home() {
 		});
 	};
 
-	const handleCompositionStart = () => {
-		setIsComposing(true);
-	};
+	const commitActiveInput = () => {
+		if (typeof document === 'undefined') {
+			return;
+		}
 
-	const handleCompositionEnd = (index: number, value: string) => {
-		setIsComposing(false);
-		handleChange(index, value);
+		const active = document.activeElement as HTMLInputElement | null;
+		if (!active || active.tagName !== 'INPUT') {
+			return;
+		}
+
+		const index = Number(active.dataset.guessIndex);
+		if (!Number.isNaN(index)) {
+			handleChange(index, active.value);
+		}
 	};
 
 	const submitRow = (e?: React.FormEvent) => {
 		e?.preventDefault();
+		commitActiveInput();
+		if (typeof document !== 'undefined') {
+			(document.activeElement as HTMLElement | null)?.blur();
+		}
+
 		const row = board[activeRow];
 		if (row.some((c) => c === '')) {
 			setMessage('Enter a full 5-letter word.');
@@ -180,13 +194,10 @@ export default function Home() {
 								aria-label={`Guess letter ${i + 1}`}
 								inputMode='text'
 								maxLength={1}
+								data-guess-index={i}
 								value={val}
 								onChange={(e) => handleChange(i, e.target.value)}
-								onInput={(e) => handleChange(i, e.currentTarget.value)}
-								onCompositionStart={handleCompositionStart}
-								onCompositionEnd={(e) =>
-									handleCompositionEnd(i, e.currentTarget.value)
-								}
+								onBlur={(e) => handleChange(i, e.target.value)}
 								autoCapitalize='characters'
 								autoFocus={i === 0}
 								autoCorrect='off'

@@ -79,20 +79,38 @@ export default function Home() {
 		}
 	};
 
+	const getActiveRowFromInputs = () => {
+		if (typeof document === 'undefined') {
+			return board[activeRow];
+		}
+
+		return board[activeRow].map((letter, index) => {
+			const input = document.querySelector<HTMLInputElement>(
+				`input[data-guess-index="${index}"]`,
+			);
+			return normalizeLetter(input?.value ?? letter);
+		});
+	};
+
 	const submitRow = (e?: React.FormEvent) => {
 		e?.preventDefault();
-		commitActiveInput();
+		const currentRow = getActiveRowFromInputs();
+		setBoard((prev) => {
+			const next = prev.map((r) => [...r]);
+			next[activeRow] = currentRow;
+			return next;
+		});
+
 		if (typeof document !== 'undefined') {
 			(document.activeElement as HTMLElement | null)?.blur();
 		}
 
-		const row = board[activeRow];
-		if (row.some((c) => c === '')) {
+		if (currentRow.some((c) => c === '')) {
 			setMessage('Enter a full 5-letter word.');
 			return;
 		}
 
-		const guess = row.join('');
+		const guess = currentRow.join('');
 		const evalRow = evaluateGuess(guess, targetWord);
 
 		setEvaluations((prev) => {

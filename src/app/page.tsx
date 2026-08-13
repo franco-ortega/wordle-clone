@@ -73,9 +73,26 @@ export default function Home() {
 			return;
 		}
 
+		const rowIndex = Number(active.dataset.rowIndex);
 		const index = Number(active.dataset.guessIndex);
-		if (!Number.isNaN(index)) {
-			handleChange(index, active.value);
+		if (!Number.isNaN(rowIndex) && !Number.isNaN(index)) {
+			setBoard((prev) => {
+				const next = prev.map((r) => [...r]);
+				const row =
+					rowIndex >= 0 && rowIndex < next.length ? next[rowIndex] : null;
+				if (!row) {
+					return prev;
+				}
+
+				const value = normalizeLetter(active.value);
+				if (value === '') {
+					row[index] = '';
+					return next;
+				}
+
+				row[index] = value;
+				return next;
+			});
 		}
 	};
 
@@ -84,16 +101,23 @@ export default function Home() {
 			return board[activeRow];
 		}
 
+		const activeInput = document.activeElement as HTMLInputElement | null;
 		return board[activeRow].map((letter, index) => {
-			const input = document.querySelector<HTMLInputElement>(
-				`input[data-guess-index="${index}"]`,
-			);
+			const input =
+				activeInput &&
+				activeInput.dataset.rowIndex === String(activeRow) &&
+				activeInput.dataset.guessIndex === String(index)
+					? activeInput
+					: document.querySelector<HTMLInputElement>(
+							`input[data-row-index="${activeRow}"][data-guess-index="${index}"]`,
+						);
 			return normalizeLetter(input?.value ?? letter);
 		});
 	};
 
 	const submitRow = (e?: React.FormEvent) => {
 		e?.preventDefault();
+		commitActiveInput();
 		const currentRow = getActiveRowFromInputs();
 		setBoard((prev) => {
 			const next = prev.map((r) => [...r]);
@@ -212,6 +236,7 @@ export default function Home() {
 								aria-label={`Guess letter ${i + 1}`}
 								inputMode='text'
 								maxLength={1}
+								data-row-index={activeRow}
 								data-guess-index={i}
 								value={val}
 								onChange={(e) => handleChange(i, e.target.value)}

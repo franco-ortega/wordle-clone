@@ -20,15 +20,25 @@ function getTileClass(state: TileState | undefined) {
 	}
 }
 
+function createMatrix<T>(rows: number, cols: number, fill: T): T[][] {
+	const result: T[][] = [];
+	for (let i = 0; i < rows; i++) {
+		const row: T[] = [];
+		for (let j = 0; j < cols; j++) {
+			row.push(fill);
+		}
+		result.push(row);
+	}
+	return result;
+}
+
 export default function Home() {
 	const [targetWord, setTargetWord] = useState(() => getRandomWord());
 	const [board, setBoard] = useState(() =>
-		Array.from({ length: MAX_ATTEMPTS }, () => Array(WORD_LENGTH).fill('')),
+		createMatrix(MAX_ATTEMPTS, WORD_LENGTH, ''),
 	);
 	const [evaluations, setEvaluations] = useState(() =>
-		Array.from({ length: MAX_ATTEMPTS }, () =>
-			Array(WORD_LENGTH).fill(undefined as TileState | undefined),
-		),
+		createMatrix<TileState | undefined>(MAX_ATTEMPTS, WORD_LENGTH, undefined),
 	);
 	const [activeRow, setActiveRow] = useState(0);
 	const [guessInput, setGuessInput] = useState('');
@@ -36,12 +46,15 @@ export default function Home() {
 	const inputRef = useRef<HTMLInputElement>(null);
 
 	const normalizeGuess = (value: string) => {
-		const letters = value
-			.replace(/[^a-z]/gi, '')
-			.toUpperCase()
-			.slice(0, WORD_LENGTH);
-
-		return letters;
+		let letters = '';
+		for (let i = 0; i < value.length; i++) {
+			const char = value[i];
+			const code = char.charCodeAt(0);
+			if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
+				letters += char;
+			}
+		}
+		return letters.toUpperCase().slice(0, WORD_LENGTH);
 	};
 
 	const handleGuessInput = (value: string) => {
@@ -49,12 +62,12 @@ export default function Home() {
 	};
 
 	const submitRow = () => {
-		// Blur the input to close mobile keyboard
-		inputRef.current?.blur();
-
-		const currentRow = Array.from(guessInput.padEnd(WORD_LENGTH, ' ')).map(
-			(ch) => (ch === ' ' ? '' : ch),
-		);
+		const paddedInput = guessInput.padEnd(WORD_LENGTH, ' ');
+		const currentRow: string[] = [];
+		for (let i = 0; i < WORD_LENGTH; i++) {
+			const char = paddedInput[i];
+			currentRow.push(char === ' ' ? '' : char);
+		}
 
 		if (currentRow.some((c) => c === '')) {
 			setMessage('Enter a full 5-letter word.');
@@ -79,12 +92,14 @@ export default function Home() {
 		if (guess === targetWord) {
 			setMessage('You solved it!');
 			setGuessInput('');
+			inputRef.current?.blur();
 			return;
 		}
 
 		if (activeRow === MAX_ATTEMPTS - 1) {
 			setMessage(`The word was ${targetWord}.`);
 			setGuessInput('');
+			inputRef.current?.blur();
 			return;
 		}
 
@@ -95,13 +110,9 @@ export default function Home() {
 
 	const restart = () => {
 		setTargetWord(getRandomWord());
-		setBoard(
-			Array.from({ length: MAX_ATTEMPTS }, () => Array(WORD_LENGTH).fill('')),
-		);
+		setBoard(createMatrix(MAX_ATTEMPTS, WORD_LENGTH, ''));
 		setEvaluations(
-			Array.from({ length: MAX_ATTEMPTS }, () =>
-				Array(WORD_LENGTH).fill(undefined),
-			),
+			createMatrix<TileState | undefined>(MAX_ATTEMPTS, WORD_LENGTH, undefined),
 		);
 		setGuessInput('');
 		setActiveRow(0);
@@ -184,6 +195,10 @@ export default function Home() {
 					<button
 						type='button'
 						onClick={submitRow}
+						onTouchEnd={(e) => {
+							e.preventDefault();
+							submitRow();
+						}}
 						className='min-h-14 rounded-2xl bg-emerald-600 px-4 py-4 text-base font-semibold text-white transition-colors active:bg-emerald-500 hover:bg-emerald-500 disabled:opacity-50'
 					>
 						Submit Guess

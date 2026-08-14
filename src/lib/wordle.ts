@@ -19,8 +19,12 @@ export function getRandomWord() {
 }
 
 export function evaluateGuess(guess: string, target: string): TileState[] {
-	const result: TileState[] = Array(guess.length).fill('absent');
+	const result: TileState[] = [];
 	const remaining = new Map<string, number>();
+
+	for (let i = 0; i < guess.length; i++) {
+		result.push('absent');
+	}
 
 	for (const char of target) {
 		remaining.set(char, (remaining.get(char) ?? 0) + 1);

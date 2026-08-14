@@ -31,7 +31,6 @@ export default function Home() {
 		),
 	);
 	const [activeRow, setActiveRow] = useState(0);
-	const [currentGuess, setCurrentGuess] = useState(Array(WORD_LENGTH).fill(''));
 	const [message, setMessage] = useState('Enter a full 5-letter word.');
 
 	const normalizeLetter = (value: string) => {
@@ -46,23 +45,27 @@ export default function Home() {
 
 	const handleChange = (index: number, value: string) => {
 		const letter = normalizeLetter(value);
-		setCurrentGuess((prev) => {
-			const next = [...prev];
+
+		setBoard((prev) => {
+			const next = prev.map((row) => [...row]);
+			const currentRow = next[activeRow];
+
 			if (value === '') {
-				next[index] = '';
+				currentRow[index] = '';
 				return next;
 			}
+
 			if (!letter) {
 				return prev;
 			}
-			next[index] = letter;
+
+			currentRow[index] = letter;
 			return next;
 		});
 	};
 
-	const submitRow = (e?: React.FormEvent) => {
-		e?.preventDefault();
-		const currentRow = [...currentGuess];
+	const submitRow = () => {
+		const currentRow = [...board[activeRow]];
 
 		if (currentRow.some((c) => c === '')) {
 			setMessage('Enter a full 5-letter word.');
@@ -71,12 +74,6 @@ export default function Home() {
 
 		const guess = currentRow.join('');
 		const evalRow = evaluateGuess(guess, targetWord);
-
-		setBoard((prev) => {
-			const next = prev.map((row) => [...row]);
-			next[activeRow] = currentRow;
-			return next;
-		});
 
 		setEvaluations((prev) => {
 			const next = prev.map((row) => [...row]);
@@ -94,7 +91,6 @@ export default function Home() {
 			return;
 		}
 
-		setCurrentGuess(Array(WORD_LENGTH).fill(''));
 		setActiveRow((r) => r + 1);
 		setMessage('Try another word.');
 	};
@@ -109,7 +105,6 @@ export default function Home() {
 				Array(WORD_LENGTH).fill(undefined),
 			),
 		);
-		setCurrentGuess(Array(WORD_LENGTH).fill(''));
 		setActiveRow(0);
 		setMessage('Enter a full 5-letter word.');
 	};
@@ -171,9 +166,9 @@ export default function Home() {
 					<div id='guess-input-label' className='sr-only'>
 						Current guess input row
 					</div>
-					<form onSubmit={submitRow} className='flex flex-col gap-2'>
+					<div className='flex flex-col gap-2'>
 						<div className='grid grid-cols-5 gap-2 rounded-2xl border border-emerald-500/20 bg-zinc-900/90 p-2 shadow-[0_0_0_0_1px_rgba(16,185,129,0.15)]'>
-							{currentGuess.map((val, i) => (
+							{board[activeRow].map((val, i) => (
 								<input
 									key={i}
 									type='text'
@@ -192,12 +187,13 @@ export default function Home() {
 							))}
 						</div>
 						<button
-							type='submit'
+							type='button'
+							onClick={submitRow}
 							className='min-h-[12] rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
 						>
 							Submit Guess
 						</button>
-					</form>
+					</div>
 				</div>
 			</div>
 		</main>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { evaluateGuess, getRandomWord } from '@/lib/wordle';
 import type { TileState } from '@/lib/wordle';
 
@@ -31,41 +31,30 @@ export default function Home() {
 		),
 	);
 	const [activeRow, setActiveRow] = useState(0);
+	const [guessInput, setGuessInput] = useState('');
 	const [message, setMessage] = useState('Enter a full 5-letter word.');
+	const inputRef = useRef<HTMLInputElement>(null);
 
-	const normalizeLetter = (value: string) => {
-		const raw = value.trim().slice(-1).toUpperCase();
-		if (raw.length !== 1) {
-			return '';
-		}
+	const normalizeGuess = (value: string) => {
+		const letters = value
+			.replace(/[^a-z]/gi, '')
+			.toUpperCase()
+			.slice(0, WORD_LENGTH);
 
-		const code = raw.charCodeAt(0);
-		return code >= 65 && code <= 90 ? raw : '';
+		return letters;
 	};
 
-	const handleChange = (index: number, value: string) => {
-		const letter = normalizeLetter(value);
-
-		setBoard((prev) => {
-			const next = prev.map((row) => [...row]);
-			const currentRow = next[activeRow];
-
-			if (value === '') {
-				currentRow[index] = '';
-				return next;
-			}
-
-			if (!letter) {
-				return prev;
-			}
-
-			currentRow[index] = letter;
-			return next;
-		});
+	const handleGuessInput = (value: string) => {
+		setGuessInput(normalizeGuess(value));
 	};
 
 	const submitRow = () => {
-		const currentRow = [...board[activeRow]];
+		// Blur the input to close mobile keyboard
+		inputRef.current?.blur();
+
+		const currentRow = Array.from(guessInput.padEnd(WORD_LENGTH, ' ')).map(
+			(ch) => (ch === ' ' ? '' : ch),
+		);
 
 		if (currentRow.some((c) => c === '')) {
 			setMessage('Enter a full 5-letter word.');
@@ -75,6 +64,12 @@ export default function Home() {
 		const guess = currentRow.join('');
 		const evalRow = evaluateGuess(guess, targetWord);
 
+		setBoard((prev) => {
+			const next = prev.map((row) => [...row]);
+			next[activeRow] = currentRow;
+			return next;
+		});
+
 		setEvaluations((prev) => {
 			const next = prev.map((row) => [...row]);
 			next[activeRow] = evalRow;
@@ -83,14 +78,17 @@ export default function Home() {
 
 		if (guess === targetWord) {
 			setMessage('You solved it!');
+			setGuessInput('');
 			return;
 		}
 
 		if (activeRow === MAX_ATTEMPTS - 1) {
 			setMessage(`The word was ${targetWord}.`);
+			setGuessInput('');
 			return;
 		}
 
+		setGuessInput('');
 		setActiveRow((r) => r + 1);
 		setMessage('Try another word.');
 	};
@@ -105,6 +103,7 @@ export default function Home() {
 				Array(WORD_LENGTH).fill(undefined),
 			),
 		);
+		setGuessInput('');
 		setActiveRow(0);
 		setMessage('Enter a full 5-letter word.');
 	};
@@ -158,42 +157,37 @@ export default function Home() {
 						)),
 					)}
 				</div>
-				<div
-					className='flex flex-col gap-2'
-					role='group'
-					aria-labelledby='guess-input-label'
-				>
-					<div id='guess-input-label' className='sr-only'>
-						Current guess input row
-					</div>
-					<div className='flex flex-col gap-2'>
-						<div className='grid grid-cols-5 gap-2 rounded-2xl border border-emerald-500/20 bg-zinc-900/90 p-2 shadow-[0_0_0_0_1px_rgba(16,185,129,0.15)]'>
-							{board[activeRow].map((val, i) => (
-								<input
-									key={i}
-									type='text'
-									aria-label={`Guess letter ${i + 1}`}
-									inputMode='text'
-									maxLength={1}
-									value={val}
-									onChange={(e) => handleChange(i, e.target.value)}
-									autoCapitalize='characters'
-									autoFocus={i === 0}
-									autoCorrect='off'
-									spellCheck={false}
-									autoComplete='off'
-									className='min-h-[12] rounded-2xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-center text-base font-semibold uppercase text-white outline-none focus:border-emerald-500'
-								/>
-							))}
-						</div>
-						<button
-							type='button'
-							onClick={submitRow}
-							className='min-h-[12] rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
-						>
-							Submit Guess
-						</button>
-					</div>
+				<div className='flex flex-col gap-2'>
+					<label htmlFor='guess-input' className='sr-only'>
+						Enter your guess
+					</label>
+					<input
+						ref={inputRef}
+						id='guess-input'
+						type='text'
+						value={guessInput}
+						onChange={(e) => handleGuessInput(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault();
+								submitRow();
+							}
+						}}
+						autoCapitalize='characters'
+						autoCorrect='off'
+						spellCheck={false}
+						autoComplete='off'
+						maxLength={WORD_LENGTH}
+						placeholder='Type a 5-letter word'
+						className='rounded-2xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-center text-base font-semibold uppercase text-white outline-none focus:border-emerald-500'
+					/>
+					<button
+						type='button'
+						onClick={submitRow}
+						className='min-h-14 rounded-2xl bg-emerald-600 px-4 py-4 text-base font-semibold text-white transition-colors active:bg-emerald-500 hover:bg-emerald-500 disabled:opacity-50'
+					>
+						Submit Guess
+					</button>
 				</div>
 			</div>
 		</main>

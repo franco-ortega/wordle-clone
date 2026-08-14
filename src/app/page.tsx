@@ -31,6 +31,7 @@ export default function Home() {
 		),
 	);
 	const [activeRow, setActiveRow] = useState(0);
+	const [currentGuess, setCurrentGuess] = useState(Array(WORD_LENGTH).fill(''));
 	const [message, setMessage] = useState('Enter a full 5-letter word.');
 
 	const normalizeLetter = (value: string) => {
@@ -45,89 +46,23 @@ export default function Home() {
 
 	const handleChange = (index: number, value: string) => {
 		const letter = normalizeLetter(value);
-
-		setBoard((prev) => {
-			const next = prev.map((r) => [...r]);
-
+		setCurrentGuess((prev) => {
+			const next = [...prev];
 			if (value === '') {
-				next[activeRow][index] = '';
+				next[index] = '';
 				return next;
 			}
-
 			if (!letter) {
 				return prev;
 			}
-
-			next[activeRow][index] = letter;
+			next[index] = letter;
 			return next;
-		});
-	};
-
-	const commitActiveInput = () => {
-		if (typeof document === 'undefined') {
-			return;
-		}
-
-		const active = document.activeElement as HTMLInputElement | null;
-		if (!active || active.tagName !== 'INPUT') {
-			return;
-		}
-
-		const rowIndex = Number(active.dataset.rowIndex);
-		const index = Number(active.dataset.guessIndex);
-		if (!Number.isNaN(rowIndex) && !Number.isNaN(index)) {
-			setBoard((prev) => {
-				const next = prev.map((r) => [...r]);
-				const row =
-					rowIndex >= 0 && rowIndex < next.length ? next[rowIndex] : null;
-				if (!row) {
-					return prev;
-				}
-
-				const value = normalizeLetter(active.value);
-				if (value === '') {
-					row[index] = '';
-					return next;
-				}
-
-				row[index] = value;
-				return next;
-			});
-		}
-	};
-
-	const getActiveRowFromInputs = () => {
-		if (typeof document === 'undefined') {
-			return board[activeRow];
-		}
-
-		const activeInput = document.activeElement as HTMLInputElement | null;
-		return board[activeRow].map((letter, index) => {
-			const input =
-				activeInput &&
-				activeInput.dataset.rowIndex === String(activeRow) &&
-				activeInput.dataset.guessIndex === String(index)
-					? activeInput
-					: document.querySelector<HTMLInputElement>(
-							`input[data-row-index="${activeRow}"][data-guess-index="${index}"]`,
-						);
-			return normalizeLetter(input?.value ?? letter);
 		});
 	};
 
 	const submitRow = (e?: React.FormEvent) => {
 		e?.preventDefault();
-		commitActiveInput();
-		const currentRow = getActiveRowFromInputs();
-		setBoard((prev) => {
-			const next = prev.map((r) => [...r]);
-			next[activeRow] = currentRow;
-			return next;
-		});
-
-		if (typeof document !== 'undefined') {
-			(document.activeElement as HTMLElement | null)?.blur();
-		}
+		const currentRow = [...currentGuess];
 
 		if (currentRow.some((c) => c === '')) {
 			setMessage('Enter a full 5-letter word.');
@@ -137,8 +72,14 @@ export default function Home() {
 		const guess = currentRow.join('');
 		const evalRow = evaluateGuess(guess, targetWord);
 
+		setBoard((prev) => {
+			const next = prev.map((row) => [...row]);
+			next[activeRow] = currentRow;
+			return next;
+		});
+
 		setEvaluations((prev) => {
-			const next = prev.map((r) => [...r]);
+			const next = prev.map((row) => [...row]);
 			next[activeRow] = evalRow;
 			return next;
 		});
@@ -153,6 +94,7 @@ export default function Home() {
 			return;
 		}
 
+		setCurrentGuess(Array(WORD_LENGTH).fill(''));
 		setActiveRow((r) => r + 1);
 		setMessage('Try another word.');
 	};
@@ -167,6 +109,7 @@ export default function Home() {
 				Array(WORD_LENGTH).fill(undefined),
 			),
 		);
+		setCurrentGuess(Array(WORD_LENGTH).fill(''));
 		setActiveRow(0);
 		setMessage('Enter a full 5-letter word.');
 	};
@@ -228,35 +171,33 @@ export default function Home() {
 					<div id='guess-input-label' className='sr-only'>
 						Current guess input row
 					</div>
-					<div className='grid grid-cols-5 gap-2 rounded-2xl border border-emerald-500/20 bg-zinc-900/90 p-2 shadow-[0_0_0_0_1px_rgba(16,185,129,0.15)]'>
-						{board[activeRow].map((val, i) => (
-							<input
-								key={i}
-								type='text'
-								aria-label={`Guess letter ${i + 1}`}
-								inputMode='text'
-								maxLength={1}
-								data-row-index={activeRow}
-								data-guess-index={i}
-								value={val}
-								onChange={(e) => handleChange(i, e.target.value)}
-								onBlur={(e) => handleChange(i, e.target.value)}
-								autoCapitalize='characters'
-								autoFocus={i === 0}
-								autoCorrect='off'
-								spellCheck={false}
-								autoComplete='off'
-								className='min-h-[12] rounded-2xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-center text-base font-semibold uppercase text-white outline-none focus:border-emerald-500'
-							/>
-						))}
-					</div>
-					<button
-						type='button'
-						onClick={submitRow}
-						className='min-h-[12] rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
-					>
-						Submit Guess
-					</button>
+					<form onSubmit={submitRow} className='flex flex-col gap-2'>
+						<div className='grid grid-cols-5 gap-2 rounded-2xl border border-emerald-500/20 bg-zinc-900/90 p-2 shadow-[0_0_0_0_1px_rgba(16,185,129,0.15)]'>
+							{currentGuess.map((val, i) => (
+								<input
+									key={i}
+									type='text'
+									aria-label={`Guess letter ${i + 1}`}
+									inputMode='text'
+									maxLength={1}
+									value={val}
+									onChange={(e) => handleChange(i, e.target.value)}
+									autoCapitalize='characters'
+									autoFocus={i === 0}
+									autoCorrect='off'
+									spellCheck={false}
+									autoComplete='off'
+									className='min-h-[12] rounded-2xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-center text-base font-semibold uppercase text-white outline-none focus:border-emerald-500'
+								/>
+							))}
+						</div>
+						<button
+							type='submit'
+							className='min-h-[12] rounded-2xl bg-emerald-600 px-3 py-3 text-sm font-semibold text-white active:bg-emerald-500'
+						>
+							Submit Guess
+						</button>
+					</form>
 				</div>
 			</div>
 		</main>

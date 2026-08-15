@@ -195,10 +195,6 @@ export default function Home() {
 					<button
 						type='button'
 						onClick={submitRow}
-						onTouchEnd={(e) => {
-							e.preventDefault();
-							submitRow();
-						}}
 						className='min-h-14 rounded-2xl bg-emerald-600 px-4 py-4 text-base font-semibold text-white transition-colors active:bg-emerald-500 hover:bg-emerald-500 disabled:opacity-50'
 					>
 						Submit Guess

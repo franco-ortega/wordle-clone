@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { evaluateGuess, getRandomWord } from '@/lib/wordle';
 import type { TileState } from '@/lib/wordle';
+import Link from 'next/link';
 
 const MAX_ATTEMPTS = 6;
 const WORD_LENGTH = 5;
@@ -129,6 +130,9 @@ export default function Home() {
 						</p>
 						<h1 className='text-xl font-semibold'>Guess the word</h1>
 					</div>
+					<button className='rounded-full border border-zinc-700 px-3 py-1 text-sm text-zinc-200'>
+						<Link href='/manual'>Manual</Link>
+					</button>
 					<button
 						type='button'
 						onClick={restart}

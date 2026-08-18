@@ -168,7 +168,13 @@ export default function Home() {
 						)),
 					)}
 				</div>
-				<div className='flex flex-col gap-2'>
+				<form
+					className='flex flex-col gap-2'
+					onSubmit={(e) => {
+						e.preventDefault();
+						submitRow();
+					}}
+				>
 					<label htmlFor='guess-input' className='sr-only'>
 						Enter your guess
 					</label>
@@ -193,13 +199,12 @@ export default function Home() {
 						className='rounded-2xl border border-zinc-700 bg-zinc-800 px-3 py-3 text-center text-base font-semibold uppercase text-white outline-none focus:border-emerald-500'
 					/>
 					<button
-						type='button'
-						onClick={submitRow}
+						type='submit'
 						className='min-h-14 rounded-2xl bg-emerald-600 px-4 py-4 text-base font-semibold text-white transition-colors active:bg-emerald-500 hover:bg-emerald-500 disabled:opacity-50'
 					>
 						Submit Guess
 					</button>
-				</div>
+				</form>
 			</div>
 		</main>
 	);

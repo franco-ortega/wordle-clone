@@ -4,4 +4,4 @@
 
 Sessions
 
-- Mon, Aug 24 - start session
+- Mon, Aug 24 - start session - end session

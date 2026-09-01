@@ -6,6 +6,8 @@ import { getRandomWord } from '@/lib/wordle';
 function Manual() {
 	const [guess, setGuess] = useState('');
 	const [displayCorrect, setDisplayCorrect] = useState(false);
+	const [displayAnswer, setDisplayAnswer] = useState(false);
+	const [numberOfGuesses, setNumberOfGuesses] = useState(0);
 	// const targetWord = getRandomWord();
 	const targetWord = 'SWIFT';
 
@@ -13,6 +15,13 @@ function Manual() {
 		e.preventDefault();
 
 		setDisplayCorrect(true);
+		setNumberOfGuesses((prev) => {
+			const newTally = prev + 1;
+
+			if (newTally === 5) setDisplayAnswer(true);
+
+			return newTally;
+		});
 	};
 
 	return (
@@ -41,7 +50,7 @@ function Manual() {
 				{displayCorrect && (
 					<section>Correct: {guess === targetWord ? 'Yes' : 'No'}</section>
 				)}
-				<section>Answer: {guess}</section>
+				{displayAnswer && <section>Answer: {targetWord}</section>}
 			</main>
 		</div>
 	);

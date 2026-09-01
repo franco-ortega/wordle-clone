@@ -5,7 +5,15 @@ import { getRandomWord } from '@/lib/wordle';
 
 function Manual() {
 	const [guess, setGuess] = useState('');
-	const targetWord = getRandomWord();
+	const [displayCorrect, setDisplayCorrect] = useState(false);
+	// const targetWord = getRandomWord();
+	const targetWord = 'SWIFT';
+
+	const onGuessSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
+		setDisplayCorrect(true);
+	};
 
 	return (
 		<div>
@@ -17,16 +25,10 @@ function Manual() {
 				<p>This is the Wordle manual.</p>
 
 				<section>
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							if (guess === targetWord) {
-								alert('You guessed the word!');
-							}
-						}}
-					>
+					<form onSubmit={onGuessSubmit}>
 						<label htmlFor='guess'>Guess:</label>
 						<input
+							className='border rounded p-1'
 							type='text'
 							id='guess'
 							name='guess'
@@ -36,6 +38,9 @@ function Manual() {
 					</form>
 				</section>
 
+				{displayCorrect && (
+					<section>Correct: {guess === targetWord ? 'Yes' : 'No'}</section>
+				)}
 				<section>Answer: {guess}</section>
 			</main>
 		</div>

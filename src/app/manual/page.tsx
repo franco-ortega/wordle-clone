@@ -30,11 +30,14 @@ function Manual() {
 				<h1>Wordle Manual</h1>
 			</header>
 
-			<main>
+			<main className='flex flex-col gap-2 items-center justify-center'>
 				<p>This is the Wordle manual.</p>
 
 				<section>
-					<form onSubmit={onGuessSubmit}>
+					<form
+						onSubmit={onGuessSubmit}
+						className='flex flex-col gap-2 items-center justify-center'
+					>
 						<label htmlFor='guess'>Guess:</label>
 						<input
 							className='border rounded p-1'
@@ -43,7 +46,12 @@ function Manual() {
 							name='guess'
 							onChange={(e) => setGuess(e.target.value)}
 						/>
-						<button type='submit'>Submit</button>
+						<button
+							type='submit'
+							className='border-2 border-white border-r-4 rounded p-1 ml-2 bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
+						>
+							Submit
+						</button>
 					</form>
 				</section>
 

@@ -6,3 +6,4 @@ Sessions
 
 - Mon, Aug 26 - start session - end session
 - Tue, Sep 01 - start session
+- Wed, Sep 02 - start session

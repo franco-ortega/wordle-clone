@@ -8,3 +8,5 @@ Sessions
 - Tue, Sep 01 - start session
 - Wed, Sep 02 - start session
 - Fri, Sep 04 - start session - end session
+
+- Mon, Sep 07 - start session

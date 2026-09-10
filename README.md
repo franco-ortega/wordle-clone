@@ -10,4 +10,4 @@ Sessions
 - Fri, Sep 04 - start session - end session
 
 - Mon, Sep 07 - start session
-- Wed, Sep 09 - start session
+- Wed, Sep 09 - start session - end session

@@ -145,6 +145,7 @@ function Manual() {
 					<section>Correct: {guess === targetWord ? 'Yes' : 'No'}</section>
 				)}
 				{displayAnswer && <section>Answer: {targetWord}</section>}
+				<div>Number of Guesses: {numberOfGuesses} / 5</div>
 			</main>
 		</div>
 	);

@@ -1,15 +1,10 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { getRandomWord } from '@/lib/wordle';
+// import { getRandomWord } from '@/lib/wordle';
 
 function Manual() {
 	const [guess, setGuess] = useState('');
-	const [letterOne, setLetterOne] = useState('');
-	const [letterTwo, setLetterTwo] = useState('');
-	const [letterThree, setLetterThree] = useState('');
-	const [letterFour, setLetterFour] = useState('');
-	const [letterFive, setLetterFive] = useState('');
 	const [displayCorrect, setDisplayCorrect] = useState(false);
 	const [displayAnswer, setDisplayAnswer] = useState(false);
 	const [numberOfGuesses, setNumberOfGuesses] = useState(0);
@@ -84,35 +79,6 @@ function Manual() {
 
 	// testing AREA
 
-	// const onGuessSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-	// 	e.preventDefault();
-
-	// 	const guess = (
-	// 		letterOne +
-	// 		letterTwo +
-	// 		letterThree +
-	// 		letterFour +
-	// 		letterFive
-	// 	).toUpperCase();
-
-	// 	setGuess(guess);
-
-	// 	setDisplayCorrect(true);
-	// 	setNumberOfGuesses((prev) => {
-	// 		const newTally = prev + 1;
-
-	// 		if (newTally === 5 || guess === targetWord) setDisplayAnswer(true);
-
-	// 		return newTally;
-	// 	});
-
-	// 	setLetterOne('');
-	// 	setLetterTwo('');
-	// 	setLetterThree('');
-	// 	setLetterFour('');
-	// 	setLetterFive('');
-	// };
-
 	return (
 		<div>
 			<header>
@@ -150,58 +116,6 @@ function Manual() {
 								</label>
 							))}
 						</div>
-						{/* <div className='flex flex-row gap-2 items-center justify-center p-5'>
-							<label htmlFor='letter-one'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-one'
-									name='letter-one'
-									value={letterOne}
-									onChange={(e) => setLetterOne(e.target.value)}
-								/>
-							</label>
-							<label htmlFor='letter-two'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-two'
-									name='letter-two'
-									value={letterTwo}
-									onChange={(e) => setLetterTwo(e.target.value)}
-								/>
-							</label>
-							<label htmlFor='letter-three'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-three'
-									name='letter-three'
-									value={letterThree}
-									onChange={(e) => setLetterThree(e.target.value)}
-								/>
-							</label>
-							<label htmlFor='letter-four'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-four'
-									name='letter-four'
-									value={letterFour}
-									onChange={(e) => setLetterFour(e.target.value)}
-								/>
-							</label>
-							<label htmlFor='letter-five'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-five'
-									name='letter-five'
-									value={letterFive}
-									onChange={(e) => setLetterFive(e.target.value)}
-								/>
-							</label>
-						</div> */}
 
 						<button
 							type='submit'
@@ -212,21 +126,14 @@ function Manual() {
 					</form>
 
 					<div className='flex flex-row gap-2 items-center justify-center p-5'>
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterOne.toUpperCase()}
-						</span>{' '}
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterTwo.toUpperCase()}
-						</span>{' '}
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterThree.toUpperCase()}
-						</span>{' '}
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterFour.toUpperCase()}
-						</span>{' '}
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterFive.toUpperCase()}
-						</span>
+						{letters.map((letter, index) => (
+							<span
+								key={index}
+								className='border rounded inline-block p-1 w-10 h-10 text-center'
+							>
+								{letter}
+							</span>
+						))}
 					</div>
 				</section>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { getRandomWord } from '@/lib/wordle';
 
 function Manual() {
@@ -16,34 +16,102 @@ function Manual() {
 	// const targetWord = getRandomWord();
 	const targetWord = 'SWIFT';
 
+	// testing AREA
+
+	const [letters, setLetters] = useState(['', '', '', '', '']);
+
+	const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+	const handleLetterChange = (index: number, value: string) => {
+		// Keep only the last character entered
+		const letter = value.slice(-1);
+
+		// Check that the character is a letter
+		const isLetter =
+			letter.length === 1 && letter.toUpperCase() !== letter.toLowerCase();
+
+		if (!isLetter) {
+			return;
+		}
+
+		const updatedLetters = [...letters];
+		updatedLetters[index] = letter.toUpperCase();
+		setLetters(updatedLetters);
+
+		// Move focus to the next input
+		if (index < inputRefs.current.length - 1) {
+			inputRefs.current[index + 1]?.focus();
+		}
+	};
+
+	const handleKeyDown = (
+		index: number,
+		event: React.KeyboardEvent<HTMLInputElement>,
+	) => {
+		// Move to the previous input when Backspace is pressed on an empty input
+		if (event.key === 'Backspace' && !letters[index] && index > 0) {
+			inputRefs.current[index - 1]?.focus();
+		}
+	};
+
 	const onGuessSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		const guess = (
-			letterOne +
-			letterTwo +
-			letterThree +
-			letterFour +
-			letterFive
-		).toUpperCase();
+		// Prevent submitting an incomplete word
+		if (letters.some((letter) => !letter)) {
+			return;
+		}
 
-		setGuess(guess);
-
+		const submittedGuess = letters.join('');
+		setGuess(submittedGuess);
 		setDisplayCorrect(true);
-		setNumberOfGuesses((prev) => {
-			const newTally = prev + 1;
 
-			if (newTally === 5 || guess === targetWord) setDisplayAnswer(true);
+		setNumberOfGuesses((previousGuesses) => {
+			const newTally = previousGuesses + 1;
+
+			if (newTally === 5 || submittedGuess === targetWord) {
+				setDisplayAnswer(true);
+			}
 
 			return newTally;
 		});
 
-		setLetterOne('');
-		setLetterTwo('');
-		setLetterThree('');
-		setLetterFour('');
-		setLetterFive('');
+		setLetters(['', '', '', '', '']);
+
+		// Return focus to the first input
+		inputRefs.current[0]?.focus();
 	};
+
+	// testing AREA
+
+	// const onGuessSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+	// 	e.preventDefault();
+
+	// 	const guess = (
+	// 		letterOne +
+	// 		letterTwo +
+	// 		letterThree +
+	// 		letterFour +
+	// 		letterFive
+	// 	).toUpperCase();
+
+	// 	setGuess(guess);
+
+	// 	setDisplayCorrect(true);
+	// 	setNumberOfGuesses((prev) => {
+	// 		const newTally = prev + 1;
+
+	// 		if (newTally === 5 || guess === targetWord) setDisplayAnswer(true);
+
+	// 		return newTally;
+	// 	});
+
+	// 	setLetterOne('');
+	// 	setLetterTwo('');
+	// 	setLetterThree('');
+	// 	setLetterFour('');
+	// 	setLetterFive('');
+	// };
 
 	return (
 		<div>
@@ -62,6 +130,27 @@ function Manual() {
 						className='flex flex-col gap-2 items-center justify-center p-5'
 					>
 						<div className='flex flex-row gap-2 items-center justify-center p-5'>
+							{letters.map((letter, index) => (
+								<label key={index} htmlFor={`letter-${index}`}>
+									<input
+										ref={(element) => {
+											inputRefs.current[index] = element;
+										}}
+										className='border rounded p-1 w-10 text-center uppercase'
+										type='text'
+										id={`letter-${index}`}
+										name={`letter-${index}`}
+										value={letter}
+										maxLength={1}
+										autoComplete='off'
+										inputMode='text'
+										onChange={(e) => handleLetterChange(index, e.target.value)}
+										onKeyDown={(e) => handleKeyDown(index, e)}
+									/>
+								</label>
+							))}
+						</div>
+						{/* <div className='flex flex-row gap-2 items-center justify-center p-5'>
 							<label htmlFor='letter-one'>
 								<input
 									className='border rounded p-1 w-10'
@@ -112,7 +201,7 @@ function Manual() {
 									onChange={(e) => setLetterFive(e.target.value)}
 								/>
 							</label>
-						</div>
+						</div> */}
 
 						<button
 							type='submit'

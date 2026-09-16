@@ -93,8 +93,30 @@ function Manual() {
 				<section>
 					<form
 						onSubmit={onGuessSubmit}
-						className='flex flex-col gap-2 items-center justify-center p-5'
+						className='flex flex-col gap-2 items-center justify-center p-5 border rounded bg-zinc-800 text-zinc-200'
 					>
+						<div className='flex flex-row gap-2 items-center justify-center p-5'>
+							{letters.map((letter, index) => (
+								<label key={index} htmlFor={`letter-${index}`}>
+									<input
+										ref={(element) => {
+											inputRefs.current[index] = element;
+										}}
+										className='border rounded p-1 w-10 text-center uppercase'
+										type='text'
+										id={`letter-${index}`}
+										name={`letter-${index}`}
+										value={letter}
+										maxLength={1}
+										autoComplete='off'
+										inputMode='text'
+										onChange={(e) => handleLetterChange(index, e.target.value)}
+										onKeyDown={(e) => handleKeyDown(index, e)}
+									/>
+								</label>
+							))}
+						</div>
+
 						<div className='flex flex-row gap-2 items-center justify-center p-5'>
 							{letters.map((letter, index) => (
 								<label key={index} htmlFor={`letter-${index}`}>
@@ -125,6 +147,8 @@ function Manual() {
 						</button>
 					</form>
 
+					<hr className='border-gray-300 w-100' />
+
 					<div className='flex flex-row gap-2 items-center justify-center p-5'>
 						{letters.map((letter, index) => (
 							<span
@@ -136,6 +160,8 @@ function Manual() {
 						))}
 					</div>
 				</section>
+
+				<hr className='border-gray-300 w-100' />
 
 				{displayCorrect && (
 					<section>Correct: {guess === targetWord ? 'Yes' : 'No'}</section>

@@ -19,3 +19,4 @@ Sessions
 - Wed, Sep 23 - start session
 
 - Thu, Oct 01 - start session
+- Fri, Oct 02 - start session

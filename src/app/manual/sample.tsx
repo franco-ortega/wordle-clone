@@ -8,7 +8,7 @@ const WORD_LENGTH = 5;
 
 type LetterStatus = 'empty' | 'correct' | 'present' | 'absent';
 
-export default function Wordle(): JSX.Element {
+export default function Wordle() {
 	const [currentGuess, setCurrentGuess] = useState<string>('');
 	const [guesses, setGuesses] = useState<string[]>([]);
 	const [message, setMessage] = useState<string>('');

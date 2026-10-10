@@ -82,6 +82,8 @@ function Manual() {
 
 	// testing AREA
 
+	console.log(guesses[0]);
+
 	return (
 		<div>
 			<header>
@@ -177,7 +179,7 @@ function Manual() {
 												type='text'
 												id={`letter-${index}`}
 												name={`letter-${index}`}
-												value={letter}
+												value={guesses[0] ? letter : ''}
 												maxLength={1}
 												autoComplete='off'
 												inputMode='text'
@@ -223,7 +225,7 @@ function Manual() {
 												type='text'
 												id={`letter-${index}`}
 												name={`letter-${index}`}
-												value={letter}
+												value={guesses[1] ? letter : ''}
 												maxLength={1}
 												autoComplete='off'
 												inputMode='text'
@@ -269,7 +271,7 @@ function Manual() {
 												type='text'
 												id={`letter-${index}`}
 												name={`letter-${index}`}
-												value={letter}
+												value={guesses[2] ? letter : ''}
 												maxLength={1}
 												autoComplete='off'
 												inputMode='text'
@@ -315,7 +317,7 @@ function Manual() {
 												type='text'
 												id={`letter-${index}`}
 												name={`letter-${index}`}
-												value={letter}
+												value={guesses[3] ? letter : ''}
 												maxLength={1}
 												autoComplete='off'
 												inputMode='text'

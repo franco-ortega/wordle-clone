@@ -22,3 +22,4 @@ Sessions
 - Fri, Oct 02 - start session
 
 - Fri, Oct 09 - start session
+- Sat, Oct 10 - start session

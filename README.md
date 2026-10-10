@@ -7,4 +7,19 @@ Sessions
 - Mon, Aug 26 - start session - end session
 - Tue, Sep 01 - start session
 - Wed, Sep 02 - start session
-- Fri, Sep 04 - start session
+- Fri, Sep 04 - start session - end session
+
+- Mon, Sep 07 - start session
+- Wed, Sep 09 - start session - end session
+- Fri, Sep 11 - start session
+
+- Mon, Sep 14 - start session
+- Wed, Sep 16 - start session
+
+- Wed, Sep 23 - start session
+
+- Thu, Oct 01 - start session
+- Fri, Oct 02 - start session
+
+- Fri, Oct 09 - start session
+- Sat, Oct 10 - start session

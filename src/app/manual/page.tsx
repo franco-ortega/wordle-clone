@@ -1,63 +1,88 @@
 'use client';
 
-import { useState } from 'react';
-import { getRandomWord } from '@/lib/wordle';
+import { useRef, useState } from 'react';
+// import { getRandomWord } from '@/lib/wordle';
 
 function Manual() {
 	const [guess, setGuess] = useState('');
-	const [guess2, setGuess2] = useState('');
-	const [letterOne, setLetterOne] = useState('');
-	const [letterTwo, setLetterTwo] = useState('');
-	const [letterThree, setLetterThree] = useState('');
-	const [letterFour, setLetterFour] = useState('');
-	const [letterFive, setLetterFive] = useState('');
 	const [displayCorrect, setDisplayCorrect] = useState(false);
 	const [displayAnswer, setDisplayAnswer] = useState(false);
 	const [numberOfGuesses, setNumberOfGuesses] = useState(0);
 	// const targetWord = getRandomWord();
 	const targetWord = 'SWIFT';
 
-	// const onGuessSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-	// 	e.preventDefault();
+	// testing AREA
 
-	// 	setDisplayCorrect(true);
-	// 	setNumberOfGuesses((prev) => {
-	// 		const newTally = prev + 1;
+	const [letters, setLetters] = useState(['', '', '', '', '']);
+	const [guesses, setGuesses] = useState<string[]>([]);
 
-	// 		if (newTally === 5) setDisplayAnswer(true);
+	const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-	// 		return newTally;
-	// 	});
-	// };
+	const handleLetterChange = (index: number, value: string) => {
+		// Keep only the last character entered
+		const letter = value.slice(-1);
 
-	const onGuessSubmit2 = (e: React.SubmitEvent<HTMLFormElement>) => {
+		// Check that the character is a letter
+		const isLetter =
+			letter.length === 1 && letter.toUpperCase() !== letter.toLowerCase();
+
+		if (!isLetter) {
+			return;
+		}
+
+		const updatedLetters = [...letters];
+		updatedLetters[index] = letter.toUpperCase();
+		setLetters(updatedLetters);
+
+		// Move focus to the next input
+		if (index < inputRefs.current.length - 1) {
+			inputRefs.current[index + 1]?.focus();
+		}
+	};
+
+	const handleKeyDown = (
+		index: number,
+		event: React.KeyboardEvent<HTMLInputElement>,
+	) => {
+		// Move to the previous input when Backspace is pressed on an empty input
+		if (event.key === 'Backspace' && !letters[index] && index > 0) {
+			inputRefs.current[index - 1]?.focus();
+		}
+	};
+
+	const onGuessSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		const guess = (
-			letterOne +
-			letterTwo +
-			letterThree +
-			letterFour +
-			letterFive
-		).toUpperCase();
+		// Prevent submitting an incomplete word
+		if (letters.some((letter) => !letter)) {
+			return;
+		}
 
-		setGuess2(guess);
-
+		const submittedGuess = letters.join('');
+		setGuess(submittedGuess);
 		setDisplayCorrect(true);
-		setNumberOfGuesses((prev) => {
-			const newTally = prev + 1;
 
-			if (newTally === 5 || guess2 === targetWord) setDisplayAnswer(true);
+		setGuesses((prev) => [...prev, submittedGuess]);
+
+		setNumberOfGuesses((previousGuesses) => {
+			const newTally = previousGuesses + 1;
+
+			if (newTally === 5 || submittedGuess === targetWord) {
+				setDisplayAnswer(true);
+			}
 
 			return newTally;
 		});
 
-		setLetterOne('');
-		setLetterTwo('');
-		setLetterThree('');
-		setLetterFour('');
-		setLetterFive('');
+		setLetters(['', '', '', '', '']);
+
+		// Return focus to the first input
+		inputRefs.current[0]?.focus();
 	};
+
+	// testing AREA
+
+	console.log(guesses[0]);
 
 	return (
 		<div>
@@ -71,81 +96,238 @@ function Manual() {
 				<hr />
 
 				<section>
-					{/* <form
-						onSubmit={onGuessSubmit}
-						className='flex flex-col gap-2 items-center justify-center'
-					>
-						<label htmlFor='guess'>Guess:</label>
-						<input
-							className='border rounded p-1'
-							type='text'
-							id='guess'
-							name='guess'
-							onChange={(e) => setGuess(e.target.value)}
-						/>
-						<button
-							type='submit'
-							className='border-2 border-white border-r-4 rounded p-1 ml-2 bg-zinc-800 text-zinc-200 hover:bg-zinc-700'
-						>
-							Submit
-						</button>
-					</form> */}
-
 					<form
-						onSubmit={onGuessSubmit2}
-						className='flex flex-col gap-2 items-center justify-center p-5'
+						onSubmit={onGuessSubmit}
+						className='flex flex-col gap-2 items-center justify-center p-5 border rounded bg-zinc-800 text-zinc-200'
 					>
 						<div className='flex flex-row gap-2 items-center justify-center p-5'>
-							<label htmlFor='letter-one'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-one'
-									name='letter-one'
-									value={letterOne}
-									onChange={(e) => setLetterOne(e.target.value)}
-								/>
-							</label>
-							<label htmlFor='letter-two'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-two'
-									name='letter-two'
-									value={letterTwo}
-									onChange={(e) => setLetterTwo(e.target.value)}
-								/>
-							</label>
-							<label htmlFor='letter-three'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-three'
-									name='letter-three'
-									value={letterThree}
-									onChange={(e) => setLetterThree(e.target.value)}
-								/>
-							</label>
-							<label htmlFor='letter-four'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-four'
-									name='letter-four'
-									value={letterFour}
-									onChange={(e) => setLetterFour(e.target.value)}
-								/>
-							</label>
-							<label htmlFor='letter-five'>
-								<input
-									className='border rounded p-1 w-10'
-									type='text'
-									id='letter-five'
-									name='letter-five'
-									value={letterFive}
-									onChange={(e) => setLetterFive(e.target.value)}
-								/>
-							</label>
+							{guesses[0]
+								? guesses[0].split('').map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={letter}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))
+								: letters.map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={letter}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))}
+						</div>
+
+						<div className='flex flex-row gap-2 items-center justify-center p-5'>
+							{guesses[1]
+								? guesses[1].split('').map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={letter}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))
+								: letters.map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={guesses[0] ? letter : ''}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))}
+						</div>
+
+						<div className='flex flex-row gap-2 items-center justify-center p-5'>
+							{guesses[2]
+								? guesses[2].split('').map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={letter}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))
+								: letters.map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={guesses[1] ? letter : ''}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))}
+						</div>
+
+						<div className='flex flex-row gap-2 items-center justify-center p-5'>
+							{guesses[3]
+								? guesses[3].split('').map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={letter}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))
+								: letters.map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={guesses[2] ? letter : ''}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))}
+						</div>
+
+						<div className='flex flex-row gap-2 items-center justify-center p-5'>
+							{guesses[4]
+								? guesses[4].split('').map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={letter}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))
+								: letters.map((letter, index) => (
+										<label key={index} htmlFor={`letter-${index}`}>
+											<input
+												ref={(element) => {
+													inputRefs.current[index] = element;
+												}}
+												className='border rounded p-1 w-10 text-center uppercase'
+												type='text'
+												id={`letter-${index}`}
+												name={`letter-${index}`}
+												value={guesses[3] ? letter : ''}
+												maxLength={1}
+												autoComplete='off'
+												inputMode='text'
+												onChange={(e) =>
+													handleLetterChange(index, e.target.value)
+												}
+												onKeyDown={(e) => handleKeyDown(index, e)}
+											/>
+										</label>
+									))}
 						</div>
 
 						<button
@@ -155,30 +337,13 @@ function Manual() {
 							Submit
 						</button>
 					</form>
-
-					<div className='flex flex-row gap-2 items-center justify-center p-5'>
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterOne.toUpperCase()}
-						</span>{' '}
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterTwo.toUpperCase()}
-						</span>{' '}
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterThree.toUpperCase()}
-						</span>{' '}
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterFour.toUpperCase()}
-						</span>{' '}
-						<span className='border rounded inline-block p-1 w-10 h-10 text-center'>
-							{letterFive.toUpperCase()}
-						</span>
-					</div>
 				</section>
 
 				{displayCorrect && (
-					<section>Correct: {guess2 === targetWord ? 'Yes' : 'No'}</section>
+					<section>Correct: {guess === targetWord ? 'Yes' : 'No'}</section>
 				)}
 				{displayAnswer && <section>Answer: {targetWord}</section>}
+				<div>Number of Guesses: {numberOfGuesses} / 5</div>
 			</main>
 		</div>
 	);

@@ -337,22 +337,7 @@ function Manual() {
 							Submit
 						</button>
 					</form>
-
-					<hr className='border-gray-300 w-100' />
-
-					<div className='flex flex-row gap-2 items-center justify-center p-5'>
-						{letters.map((letter, index) => (
-							<span
-								key={index}
-								className='border rounded inline-block p-1 w-10 h-10 text-center'
-							>
-								{letter}
-							</span>
-						))}
-					</div>
 				</section>
-
-				<hr className='border-gray-300 w-100' />
 
 				{displayCorrect && (
 					<section>Correct: {guess === targetWord ? 'Yes' : 'No'}</section>
